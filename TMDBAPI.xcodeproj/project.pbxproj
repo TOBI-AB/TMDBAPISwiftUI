@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,18 +14,32 @@
 		3C198F0D2316FB73001C55B7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C198F0C2316FB73001C55B7 /* Assets.xcassets */; };
 		3C198F102316FB73001C55B7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C198F0F2316FB73001C55B7 /* Preview Assets.xcassets */; };
 		3C198F132316FB73001C55B7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3C198F112316FB73001C55B7 /* LaunchScreen.storyboard */; };
+		3C198F1F2316FC98001C55B7 /* Webservice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C198F1E2316FC98001C55B7 /* Webservice.swift */; };
+		3C198F212316FCB4001C55B7 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C198F202316FCB4001C55B7 /* API.swift */; };
+		3C6C21A02317030500407980 /* MovieModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C219F2317030500407980 /* MovieModel.swift */; };
+		3C6C21A22317048D00407980 /* JSONDecoder+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C21A12317048D00407980 /* JSONDecoder+Extensions.swift */; };
+		3C6C21A42317060800407980 /* Fetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C21A32317060800407980 /* Fetcher.swift */; };
+		3C6C21A723171C9900407980 /* KingfisherSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C21A623171C9900407980 /* KingfisherSwiftUI */; };
+		3C6C21A923171C9900407980 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C21A823171C9900407980 /* Kingfisher */; };
+		60A374DF2317D8B700DD39E7 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A374DE2317D8B700DD39E7 /* DetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3C198F002316FB6E001C55B7 /* TMDBAPI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TMDBAPI.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3C198F032316FB6E001C55B7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		3C198F052316FB6E001C55B7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		3C198F032316FB6E001C55B7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ../AppDelegate.swift; sourceTree = "<group>"; };
+		3C198F052316FB6E001C55B7 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = ../SceneDelegate.swift; sourceTree = "<group>"; };
 		3C198F082316FB6E001C55B7 /* TMDBAPI.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TMDBAPI.xcdatamodel; sourceTree = "<group>"; };
-		3C198F0A2316FB6E001C55B7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3C198F0A2316FB6E001C55B7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = ../ContentView.swift; sourceTree = "<group>"; };
 		3C198F0C2316FB73001C55B7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3C198F0F2316FB73001C55B7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3C198F122316FB73001C55B7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3C198F142316FB73001C55B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3C198F1E2316FC98001C55B7 /* Webservice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Webservice.swift; sourceTree = "<group>"; };
+		3C198F202316FCB4001C55B7 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		3C6C219F2317030500407980 /* MovieModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieModel.swift; sourceTree = "<group>"; };
+		3C6C21A12317048D00407980 /* JSONDecoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+Extensions.swift"; sourceTree = "<group>"; };
+		3C6C21A32317060800407980 /* Fetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fetcher.swift; sourceTree = "<group>"; };
+		60A374DE2317D8B700DD39E7 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +47,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C6C21A923171C9900407980 /* Kingfisher in Frameworks */,
+				3C6C21A723171C9900407980 /* KingfisherSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,9 +74,12 @@
 		3C198F022316FB6E001C55B7 /* TMDBAPI */ = {
 			isa = PBXGroup;
 			children = (
-				3C198F032316FB6E001C55B7 /* AppDelegate.swift */,
-				3C198F052316FB6E001C55B7 /* SceneDelegate.swift */,
-				3C198F0A2316FB6E001C55B7 /* ContentView.swift */,
+				3C198F1A2316FC33001C55B7 /* Delegates */,
+				3C198F1D2316FC58001C55B7 /* Extensions */,
+				3C198F222316FCB8001C55B7 /* API */,
+				3C198F1C2316FC43001C55B7 /* Services */,
+				3C6C219E231702EB00407980 /* Model */,
+				3C198F1B2316FC3E001C55B7 /* Views */,
 				3C198F0C2316FB73001C55B7 /* Assets.xcassets */,
 				3C198F112316FB73001C55B7 /* LaunchScreen.storyboard */,
 				3C198F142316FB73001C55B7 /* Info.plist */,
@@ -76,6 +95,57 @@
 				3C198F0F2316FB73001C55B7 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3C198F1A2316FC33001C55B7 /* Delegates */ = {
+			isa = PBXGroup;
+			children = (
+				3C198F032316FB6E001C55B7 /* AppDelegate.swift */,
+				3C198F052316FB6E001C55B7 /* SceneDelegate.swift */,
+			);
+			path = Delegates;
+			sourceTree = "<group>";
+		};
+		3C198F1B2316FC3E001C55B7 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3C198F0A2316FB6E001C55B7 /* ContentView.swift */,
+				60A374DE2317D8B700DD39E7 /* DetailView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		3C198F1C2316FC43001C55B7 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				3C198F1E2316FC98001C55B7 /* Webservice.swift */,
+				3C6C21A32317060800407980 /* Fetcher.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		3C198F1D2316FC58001C55B7 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				3C6C21A12317048D00407980 /* JSONDecoder+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		3C198F222316FCB8001C55B7 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				3C198F202316FCB4001C55B7 /* API.swift */,
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		3C6C219E231702EB00407980 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				3C6C219F2317030500407980 /* MovieModel.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,6 +164,10 @@
 			dependencies = (
 			);
 			name = TMDBAPI;
+			packageProductDependencies = (
+				3C6C21A623171C9900407980 /* KingfisherSwiftUI */,
+				3C6C21A823171C9900407980 /* Kingfisher */,
+			);
 			productName = TMDBAPI;
 			productReference = 3C198F002316FB6E001C55B7 /* TMDBAPI.app */;
 			productType = "com.apple.product-type.application";
@@ -122,6 +196,9 @@
 				Base,
 			);
 			mainGroup = 3C198EF72316FB6D001C55B7;
+			packageReferences = (
+				3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			productRefGroup = 3C198F012316FB6E001C55B7 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -149,10 +226,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C6C21A02317030500407980 /* MovieModel.swift in Sources */,
 				3C198F042316FB6E001C55B7 /* AppDelegate.swift in Sources */,
+				3C6C21A22317048D00407980 /* JSONDecoder+Extensions.swift in Sources */,
+				60A374DF2317D8B700DD39E7 /* DetailView.swift in Sources */,
 				3C198F062316FB6E001C55B7 /* SceneDelegate.swift in Sources */,
 				3C198F0B2316FB6E001C55B7 /* ContentView.swift in Sources */,
+				3C198F1F2316FC98001C55B7 /* Webservice.swift in Sources */,
+				3C198F212316FCB4001C55B7 /* API.swift in Sources */,
 				3C198F092316FB6E001C55B7 /* TMDBAPI.xcdatamodeld in Sources */,
+				3C6C21A42317060800407980 /* Fetcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +373,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"TMDBAPI/Preview Content\"";
+				DEVELOPMENT_TEAM = 365H8JYPCL;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = TMDBAPI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -299,7 +383,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.abdou.TMDBAPI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -309,6 +393,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"TMDBAPI/Preview Content\"";
+				DEVELOPMENT_TEAM = 365H8JYPCL;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = TMDBAPI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -318,7 +403,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.abdou.TMDBAPI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -344,6 +429,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				branch = xcode11;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3C6C21A623171C9900407980 /* KingfisherSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = KingfisherSwiftUI;
+		};
+		3C6C21A823171C9900407980 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		3C198F072316FB6E001C55B7 /* TMDBAPI.xcdatamodeld */ = {
