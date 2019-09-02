@@ -8,12 +8,39 @@
 
 import Foundation
 
-enum Endpoint: String {
-    case popular = "/movie/popular"
-    case upcoming = "/movie/upcoming"
-    case topRated = "/movie/top_rated"
-    case nowPlaying = "/movie/now_playing"
-    case latest = "/movie/latest"
+enum Endpoint {
+    case popular
+    case upcoming
+    case topRated
+    case nowPlaying
+    case latest
+    case details(Int)
+    case genres
+    case reviews(Int)
+    case company(Int)
+    
+    var rawValue: String {
+        switch self {
+        case .popular:
+            return "/movie/popular"
+        case .upcoming:
+            return "/movie/upcoming"
+        case .topRated:
+            return "/movie/top_rated"
+        case .nowPlaying:
+            return "/movie/now_playing"
+        case .latest:
+            return "/movie/latest"
+        case .details(let id):
+            return "/movie/\(id)"
+        case .genres:
+            return "/genre/movie/list"
+        case .reviews(let id):
+            return "/movie/\(id)/reviews"
+        case .company(let id):
+            return "/company/\(id)"
+        }
+    }
 }
 
 
@@ -25,23 +52,28 @@ struct TMDBAPI {
 extension TMDBAPI {
     
     static func getEndpointUrl(_ endpoint: Endpoint, parameters:[String: Any] = [:]) -> URL {
-        
+        var _parameters: [String: Any]
         var urlCom = URLComponents(string: self.baseUrl.appending(endpoint.rawValue))
         
         if !parameters.isEmpty {
-            urlCom?.queryItems = parameters.compactMap { URLQueryItem(name: $0.key, value: String(describing: $0.value))}
+            _parameters = parameters.merging(["api_key" : self.key], uniquingKeysWith: { (_, new) in
+                new
+            })
+            urlCom?.queryItems =  _parameters.compactMap { URLQueryItem(name: $0.key, value: String(describing: $0.value))}
+        } else {
+            urlCom?.queryItems = ["api_key": self.key].compactMap { URLQueryItem(name: $0.key, value: String(describing: $0.value))}
         }
         
         guard let endpointUrl = urlCom?.url else {
             fatalError("----- Error Url \(endpoint.rawValue) -----")
         }
-        
+                
         return endpointUrl
     }
     
-    static func getMoviePoster(_ movie: Movie) -> URL? {
-        
-        let posterUrlString = "https://image.tmdb.org/t/p/w500".appending(movie.posterPath ?? "")
+    static func getMoviePosterUrl(_ posterPath: String?) -> URL? {
+        guard let unwrappedPosterPath = posterPath else { return nil }
+        let posterUrlString = "https://image.tmdb.org/t/p/w500".appending(unwrappedPosterPath)
         
         guard let posterUrl = URL(string: posterUrlString) else {
             return nil
