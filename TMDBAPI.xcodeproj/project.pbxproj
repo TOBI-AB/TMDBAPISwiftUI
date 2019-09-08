@@ -21,6 +21,8 @@
 		3C6C21A42317060800407980 /* Fetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C21A32317060800407980 /* Fetcher.swift */; };
 		3C6C21A723171C9900407980 /* KingfisherSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C21A623171C9900407980 /* KingfisherSwiftUI */; };
 		3C6C21A923171C9900407980 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C21A823171C9900407980 /* Kingfisher */; };
+		6034178D231DA8F9007E421B /* GridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6034178C231DA8F9007E421B /* GridView.swift */; };
+		60393755231D330C00486F7A /* ImagesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60393754231D330C00486F7A /* ImagesView.swift */; };
 		604127082319BB3200A4413C /* Reviews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604127072319BB3200A4413C /* Reviews.swift */; };
 		6041270A2319CC5700A4413C /* ReviewsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 604127092319CC5700A4413C /* ReviewsView.swift */; };
 		6041270C2319CF2300A4413C /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6041270B2319CF2300A4413C /* String+Extensions.swift */; };
@@ -44,6 +46,7 @@
 		6059804F231B37A30084483B /* ProductionCompaniesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6059804E231B37A30084483B /* ProductionCompaniesView.swift */; };
 		60598051231B38270084483B /* Optional+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60598050231B38270084483B /* Optional+Extensions.swift */; };
 		606B255523192FB40011D59C /* Double+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606B255423192FB40011D59C /* Double+Extensions.swift */; };
+		6076089B2325410700B5A2BE /* QGrid in Frameworks */ = {isa = PBXBuildFile; productRef = 6076089A2325410700B5A2BE /* QGrid */; };
 		60A374DF2317D8B700DD39E7 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A374DE2317D8B700DD39E7 /* DetailView.swift */; };
 		60D4CA38231C7296000E32C6 /* Locale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60D4CA37231C7296000E32C6 /* Locale+Extensions.swift */; };
 /* End PBXBuildFile section */
@@ -63,6 +66,8 @@
 		3C6C219F2317030500407980 /* MovieModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieModel.swift; sourceTree = "<group>"; };
 		3C6C21A12317048D00407980 /* JSONDecoder+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+Extensions.swift"; sourceTree = "<group>"; };
 		3C6C21A32317060800407980 /* Fetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fetcher.swift; sourceTree = "<group>"; };
+		6034178C231DA8F9007E421B /* GridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GridView.swift; path = TMDBAPI/Extensions/GridView.swift; sourceTree = SOURCE_ROOT; };
+		60393754231D330C00486F7A /* ImagesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesView.swift; sourceTree = "<group>"; };
 		604127072319BB3200A4413C /* Reviews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reviews.swift; sourceTree = "<group>"; };
 		604127092319CC5700A4413C /* ReviewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsView.swift; sourceTree = "<group>"; };
 		6041270B2319CF2300A4413C /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
@@ -95,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6076089B2325410700B5A2BE /* QGrid in Frameworks */,
 				3C6C21A923171C9900407980 /* Kingfisher in Frameworks */,
 				3C6C21A723171C9900407980 /* KingfisherSwiftUI in Frameworks */,
 			);
@@ -159,10 +165,12 @@
 		3C198F1B2316FC3E001C55B7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				6034178C231DA8F9007E421B /* GridView.swift */,
 				3C198F0A2316FB6E001C55B7 /* ContentView.swift */,
 				60A374DE2317D8B700DD39E7 /* DetailView.swift */,
 				604127092319CC5700A4413C /* ReviewsView.swift */,
 				6059804E231B37A30084483B /* ProductionCompaniesView.swift */,
+				60393754231D330C00486F7A /* ImagesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -263,6 +271,7 @@
 			packageProductDependencies = (
 				3C6C21A623171C9900407980 /* KingfisherSwiftUI */,
 				3C6C21A823171C9900407980 /* Kingfisher */,
+				6076089A2325410700B5A2BE /* QGrid */,
 			);
 			productName = TMDBAPI;
 			productReference = 3C198F002316FB6E001C55B7 /* TMDBAPI.app */;
@@ -294,6 +303,7 @@
 			mainGroup = 3C198EF72316FB6D001C55B7;
 			packageReferences = (
 				3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				607608992325410700B5A2BE /* XCRemoteSwiftPackageReference "QGrid" */,
 			);
 			productRefGroup = 3C198F012316FB6E001C55B7 /* Products */;
 			projectDirPath = "";
@@ -337,7 +347,9 @@
 			files = (
 				6059804D231B263B0084483B /* Font+Extensions.swift in Sources */,
 				60598051231B38270084483B /* Optional+Extensions.swift in Sources */,
+				60393755231D330C00486F7A /* ImagesView.swift in Sources */,
 				60598028231AEF480084483B /* EdgeInsets+Extensions.swift in Sources */,
+				6034178D231DA8F9007E421B /* GridView.swift in Sources */,
 				3C6C21A02317030500407980 /* MovieModel.swift in Sources */,
 				3C198F042316FB6E001C55B7 /* AppDelegate.swift in Sources */,
 				3C6C21A22317048D00407980 /* JSONDecoder+Extensions.swift in Sources */,
@@ -559,6 +571,14 @@
 				kind = branch;
 			};
 		};
+		607608992325410700B5A2BE /* XCRemoteSwiftPackageReference "QGrid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Q-Mobile/QGrid";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -571,6 +591,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3C6C21A523171C9800407980 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		6076089A2325410700B5A2BE /* QGrid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 607608992325410700B5A2BE /* XCRemoteSwiftPackageReference "QGrid" */;
+			productName = QGrid;
 		};
 /* End XCSwiftPackageProductDependency section */
 

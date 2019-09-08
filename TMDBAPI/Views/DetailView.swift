@@ -22,6 +22,7 @@ struct DetailView: View {
     @State var revenue: Double = 0.0
     @State var productionCompanies: [ProductionCompany] = []
     @State var productionCountries: [ProductionCountry] = []
+    @State var images = [MovieImage]()
     
     let movie: Movie
     
@@ -38,12 +39,18 @@ struct DetailView: View {
                 KFImage(TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!)
                     .resizable()
                     .cancelOnDisappear(true)
+                //Color.white
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .top, endPoint: .bottom)
+               /* .mask(
+                    KFImage(TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!)
+                        .resizable()
+                        .cancelOnDisappear(true)
+                )*/
             }
             self.detailsView
         }.listRowInsets(EdgeInsets.zero)
     }
-    
+    //.cornerRadius(20)
     var body: some View {
         GeometryReader { g in
             List {
@@ -51,9 +58,11 @@ struct DetailView: View {
                         .frame(height: g.size.height * 0.9)
                 self.ratingView
                 self.overviewView
+              
                 Section(header: Text("Extra Details").bold()) {
                     self.extraDetailsView.environment(\.lineSpacing, 5)
                 }
+                
                 Section(header: Text("Images & Videos").bold()) {
                     self.imagesView
                 }
@@ -201,10 +210,17 @@ extension DetailView {
     
     @ViewBuilder
     var imagesView: some View {
-        if _movie.imagesUrls.count == 1 {
-            KFImage(_movie.imagesUrls[0])
+        if _movie.imagesUrls.count <= 3 {
+            ForEach(_movie.imagesUrls[0..<_movie.imagesUrls.count], id: \.self) {url in
+                HStack {
+                    KFImage(url)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(minHeight:40, maxHeight: 120)
+                }
+            }
         } else {
-            NavigationLink(destination: Text("Images")) {
+            NavigationLink(destination: ImagesView(movie: _movie, images: self.images)) {
                 Text("\(_movie.imagesUrls.count) ").bold() + Text("Images")
             }
         }
@@ -239,6 +255,12 @@ extension DetailView {
         if let unwrappedProductionCountries = movie.productionCountries {
             self.productionCountries = unwrappedProductionCountries
         }
+        
+        if let unwrappedImages = movie.images {
+
+            self.images = unwrappedImages.posters//.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
+            
+        }
     }
     
     fileprivate func playTrailer() {
@@ -265,22 +287,3 @@ extension DetailView {
     }
 }
 
-struct ImagesView: View {
-    
-    let movie: Movie
-    let geometryProxy: GeometryProxy
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(movie.imagesUrls, id: \.self) { url in
-                    KFImage(url)
-                        .resizable()
-                        .aspectRatio(4/3, contentMode: .fit)
-                        //.frame(width: self.geometryProxy.size.width / 3)//, height: 80)
-                    
-                }
-            }
-        }
-    }
-}

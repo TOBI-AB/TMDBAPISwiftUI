@@ -36,9 +36,7 @@ struct Movie: Codable {
     let videos: MovieVideos?
     
     
-    struct MovieImages: Codable {
-        let posters: [MovieImage]
-    }
+  
     
     struct MovieVideos: Codable {
         let results: [MovieVideo]
@@ -95,6 +93,10 @@ struct Movie: Codable {
     }
 }
 
+struct MovieImages: Codable {
+      let posters: [MovieImage]
+}
+
 struct Genre: Codable {
     let id: Int
     let name: String
@@ -104,7 +106,9 @@ struct MovieGenre: Codable {
     let genres: [Genre]
 }
 
-struct MovieImage: Codable {
+struct MovieImage: Codable, Hashable, Identifiable {
+    var id: Int = 0
+    
     let aspectRatio: Double
     let filePath: String
     let height: Int
@@ -113,6 +117,10 @@ struct MovieImage: Codable {
     
     static var placeholder: MovieImage {
         MovieImage(aspectRatio: 0.0, filePath: "", height: 0, width: 0, voteCount: 0)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case aspectRatio,filePath,height,width,voteCount
     }
 }
 

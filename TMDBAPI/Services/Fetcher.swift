@@ -15,10 +15,12 @@ class Fetcher: ObservableObject {
     @Published var movieDetails: Movie = Movie.placeholder
     @Published var genres = [Genre]()
     @Published var reviews = [Review]()
+    @Published var images = [MovieImage]()
     
     var cancellable: AnyCancellable?
     var detailsCancellable: AnyCancellable?
     var reviewsCancellable: AnyCancellable?
+    var imagessCancellable: AnyCancellable?
     
     init() {
         self.fetchMovies()
@@ -71,5 +73,17 @@ extension Fetcher {
         
     }
     
-    
+    func fetchMovieImages(_ movie: Movie) {
+        
+        let imagesPubliser: AnyPublisher<MovieImages, Error> = Webservice.shared.getData(atEndpoint: .images(movie.id))
+        
+        imagessCancellable = imagesPubliser
+            .map { $0.posters }
+            .catch { err -> Just<[MovieImage]> in
+                debugPrint("Movie images error --> \(err)")
+                return Just([])
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.images, on: self)
+    }
 }
