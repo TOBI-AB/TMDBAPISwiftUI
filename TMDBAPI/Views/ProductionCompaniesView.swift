@@ -16,8 +16,8 @@ struct ProductionCompaniesView: View {
     var body: some View {
         
         List {
-            Section(header: Color.white.listRowInsets(.zero),
-                    footer: Color.white.listRowInsets(.zero))
+            Section(header: Color(.systemBackground).listRowInsets(.zero),
+                    footer: Color(.systemBackground).listRowInsets(.zero))
             {
                 ForEach(productionCompanies.sorted { $0.name < $1.name }, id: \.id) { comp in
                     ProductionCompanyView(company: comp)

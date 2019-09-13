@@ -8,11 +8,14 @@
 
 import SwiftUI
 import Combine
+import Kingfisher
 import KingfisherSwiftUI
 
 struct DetailView: View {
     
     @ObservedObject var fetcher = Fetcher()
+    
+    
     @State private var _movie = Movie.placeholder
     @State private var moviePosterPath = ""
     @State private var genres = [Genre]()
@@ -30,8 +33,8 @@ struct DetailView: View {
         self.movie = movie
         self.fetcher.fetchMovieDetails(movie)
         self.fetcher.fetchMovieReviews(movie)
-        
     }
+    
     
     var topSection: some View {
         ZStack(alignment: .bottomLeading) {
@@ -39,13 +42,7 @@ struct DetailView: View {
                 KFImage(TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!)
                     .resizable()
                     .cancelOnDisappear(true)
-                //Color.white
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .top, endPoint: .bottom)
-               /* .mask(
-                    KFImage(TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!)
-                        .resizable()
-                        .cancelOnDisappear(true)
-                )*/
             }
             self.detailsView
         }.listRowInsets(EdgeInsets.zero)
@@ -153,12 +150,14 @@ extension DetailView {
                 Text(verbatim: "\(_movie.voteCount)")
                     .font(.headline)
             }
-            Divider()
-            VStack(alignment: .center, spacing: 10) {
-                Text("POPULARITY")
-                    .font(.subheadline)
-                Text(verbatim: "\(_movie.popularity)")
-                    .font(.headline)
+            if _movie.popularity != nil {
+                Divider()
+                VStack(alignment: .center, spacing: 10) {
+                    Text("POPULARITY")
+                        .font(.subheadline)
+                    Text(verbatim: "\(_movie.popularity!)")
+                        .font(.headline)
+                }
             }
         }
         .frame(maxWidth:.infinity)
@@ -211,12 +210,12 @@ extension DetailView {
     @ViewBuilder
     var imagesView: some View {
         if _movie.imagesUrls.count <= 3 {
-            ForEach(_movie.imagesUrls[0..<_movie.imagesUrls.count], id: \.self) {url in
-                HStack {
+            HStack {
+                ForEach(_movie.imagesUrls[0..<_movie.imagesUrls.count], id: \.self) {url in
                     KFImage(url)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(minHeight:40, maxHeight: 120)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(minHeight:40, maxHeight: 120)
                 }
             }
         } else {

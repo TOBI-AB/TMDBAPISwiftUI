@@ -8,43 +8,40 @@
 
 import SwiftUI
 import KingfisherSwiftUI
-import QGrid
 
 struct ImagesView: View {
     
-    @ObservedObject var fetcher = Fetcher()
+    
     @State private var url = [URL]()
-    @State private var images = [MovieImage]()
-    @State private var aspectRatio: CGFloat = 0.0
     @State private var movieImage = UIImage()
     @State private var isModalShown = false
+    @State private var selectedImage = (UIImage(), CGFloat())
     
     let movie: Movie
     var movieImages: [MovieImage]
+    
     init(movie: Movie, images: [MovieImage]) {
         self.movie = movie
         self.movieImages = images
-        //self.fetcher.fetchMovieImages(movie)
     }
     
     var body: some View {
         
-        QGrid(self.movieImages, columns: 3) {
-            KFImage(TMDBAPI.getMoviePosterUrl($0.filePath)!)
-                .resizable()
-                .scaledToFit()
-                .onTapGesture { self.isModalShown.toggle() }
-        }
-        .navigationBarTitle(Text("\(self.movie.originalTitle) images"), displayMode: .inline)
-        /*.onReceive(self.fetcher.$images) { (images) in
-            DispatchQueue.main.async {
-                self.images = images
-            }
-        }*/
-        .sheet(isPresented: $isModalShown, onDismiss: {
-            self.isModalShown.toggle()
+        CollectionView(data: self.movieImages)
+            .navigationBarTitle(Text("\(self.movie.originalTitle) images"), displayMode: .inline)
+            .onReceive(NotificationCenter.default.publisher(for: .DidSelectImage)) { image in
+                
+                guard let notificationObject = image.object as? (UIImage, CGFloat) else { return }
+                
+                self.selectedImage = notificationObject
+                self.isModalShown.toggle()
+                
+        }.sheet(isPresented: self.$isModalShown, onDismiss: {
+            self.isModalShown = false
         }) {
-            ImageViewerView(image: self.movieImage)
+            ImageViewerView(selectedImage: self.selectedImage)
+        }.onDisappear {
+            debugPrint(#function)
         }
     }
 }
@@ -53,12 +50,27 @@ struct ImageViewerView: View {
     
     @Environment(\.presentationMode) var presentationMode
 
-    var image: UIImage
+    let selectedImage: (UIImage, CGFloat)
     
     var body: some View {
-        Image(uiImage: image)
-        .resizable()
-        .scaledToFit()
-            .onDisappear { self.presentationMode.wrappedValue.dismiss() }
+        VStack(spacing: 10) {
+            HStack {
+                Spacer()
+                Image(systemName: "xmark.circle.fill")
+                    .resizable()
+                    .frame(width: 24, height: 24)
+                    .onTapGesture {
+                        self.presentationMode.wrappedValue.dismiss()
+                    }
+            }
+            .padding([.top, .trailing], 10)
+            
+            Image(uiImage: selectedImage.0)
+                .resizable()
+                .aspectRatio(selectedImage.1, contentMode: .fit)
+                .layoutPriority(1)
+            
+            Spacer()
+        }
     }
 }

@@ -8,8 +8,8 @@
 
 import Foundation
 
-//extension NSLocale {
+extension Notification.Name {
     
+    static let DidSelectImage = Notification.Name("image")
     
-    
-//}
+}
