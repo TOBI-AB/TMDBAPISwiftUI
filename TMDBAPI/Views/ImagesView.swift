@@ -68,6 +68,7 @@ struct ImageViewerView: View {
             Image(uiImage: selectedImage.0)
                 .resizable()
                 .aspectRatio(selectedImage.1, contentMode: .fit)
+                .padding()
                 .layoutPriority(1)
             
             Spacer()

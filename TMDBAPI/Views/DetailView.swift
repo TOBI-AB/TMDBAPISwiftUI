@@ -195,9 +195,12 @@ extension DetailView {
            
             Group {
                 NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)) {
-                    Text("Production Companies:\n").bold()
-                        +
-                    Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
+                    VStack {
+                        Text("Production Companies:").bold()
+                                               
+                        Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
+                        .layoutPriority(1)
+                    }
                 }
                 
                 Text("Production Countries:\n").bold()
