@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 import KingfisherSwiftUI
 
 struct ProductionCompaniesView: View {
@@ -16,11 +17,12 @@ struct ProductionCompaniesView: View {
     var body: some View {
         
         List {
-            Section(header: Color(.systemBackground).listRowInsets(.zero),
-                    footer: Color(.systemBackground).listRowInsets(.zero))
+            Section(footer: Color(.systemBackground).listRowInsets(.zero))
             {
                 ForEach(productionCompanies.sorted { $0.name < $1.name }, id: \.id) { comp in
-                    ProductionCompanyView(company: comp)
+                    NavigationLink(destination: Text(verbatim: "\(comp.id)").font(.title).fontWeight(.heavy)) {
+                        ProductionCompanyView(company: comp)
+                    }
                 }
             }
         }.navigationBarTitle(productionCompanies.count == 1 ? Text("Production Company") : Text("Production Companies"), displayMode: .inline)
@@ -31,20 +33,15 @@ struct ProductionCompanyView: View {
     
     let company: ProductionCompany
     
+    @ViewBuilder
     var body: some View {
         HStack(alignment: .top) {
             
             if company.logoPath != nil {
-                KFImage(TMDBAPI.getMoviePosterUrl(company.logoPath!)!)
-                .resizable()
-                .onFailure { err in
-                        debugPrint("Error fetching production company url: \(err)")
-                }
-                .scaledToFit()
-                .frame(width: 80, height: 100)
-                .padding(2)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1).opacity(0.5))
                 
+               KFImage(TMDBAPI.getMoviePosterUrl(company.logoPath!)!, options: [.waitForCache, .transition(.fade(1))])
+                    .resizable()
+                    .modifier(CompanyImageModifier())
             }
             else {
                 ZStack {

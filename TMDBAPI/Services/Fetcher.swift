@@ -29,7 +29,7 @@ class Fetcher: ObservableObject {
 
 extension Fetcher {
     
-    func fetchMovies(atEndpoint endpoint: Endpoint = .upcoming) {
+    func fetchMovies(atEndpoint endpoint: Endpoint = .nowPlaying) {
         
         let anyPub: AnyPublisher<RequestResponse, Error> = Webservice.shared.getData(atEndpoint: endpoint)
         

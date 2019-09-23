@@ -89,6 +89,11 @@ struct Movie: Codable {
         
         return unwrappedImages.posters.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
     }
+    
+    var movieImages: [MovieImage] {
+        guard let unwrappedImages = self.images else { return [] }
+        return unwrappedImages.posters
+    }
 }
 
 struct MovieImages: Codable {

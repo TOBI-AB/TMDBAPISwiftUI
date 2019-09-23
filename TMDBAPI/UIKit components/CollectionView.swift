@@ -19,7 +19,7 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
         guard let dataSource = self.dataSource else { return }
         guard let selectedMovieImage = dataSource.itemIdentifier(for: indexPath) else { return }
         
-        ImageCache.default.retrieveImage(forKey: selectedMovieImage.filePath) { res in
+        ImageCache.default.getImage(for: selectedMovieImage)/*retrieveImage(forKey: selectedMovieImage.filePath) { res in
             do {
                 let img = try res.get().image
                
@@ -31,18 +31,33 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
             } catch {
                 debugPrint("Error getting cached image: \(error)")
             }
-        }
+        }*/
     }
     
     // MARK: Collection Flow Delegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let dataSource = self.dataSource else { return .zero }
         guard let selectedMovieImage = dataSource.itemIdentifier(for: indexPath) else { return .zero }
+        guard let collectionViewLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else {
+            fatalError()
+        }
         
         var itemWidth: CGFloat {
-            let _itemWidth = (collectionView.frame.width / 3) - 10
+            let _itemWidth = (collectionView.frame.width / 3)  - (collectionViewLayout.sectionInset.left + collectionViewLayout.sectionInset.right) - 10
             return _itemWidth
         }
+        
+        /*var itemHeight: CGFloat = 0.0
+        
+        switch collectionViewLayout.scrollDirection {
+        case .horizontal:
+            itemHeight = itemWidth / CGFloat(selectedMovieImage.aspectRatio) - collectionViewLayout.sectionInset.top - collectionViewLayout.sectionInset.bottom
+        case .vertical:
+            itemHeight = itemWidth / CGFloat(selectedMovieImage.aspectRatio)
+        default:
+            break
+        }*/
+        
         
         return CGSize(width: itemWidth, height: itemWidth / CGFloat(selectedMovieImage.aspectRatio))
     }
@@ -58,21 +73,25 @@ struct CollectionView: UIViewRepresentable {
     typealias UIViewType = UICollectionView
     
     let arr: [MovieImage]
-    let images = [UIImage]()
-    
     var urls = [URL]()
+    let scrollDirection: UICollectionView.ScrollDirection
     
-    init(data: [MovieImage]) {
+    init(data: [MovieImage], scrollDirection: UICollectionView.ScrollDirection = .vertical) {
         self.arr = data
-        urls = data.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
+        self.urls = data.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
+        self.scrollDirection = scrollDirection
     }
-        
+  
     func makeUIView(context: UIViewRepresentableContext<CollectionView>) -> UICollectionView {
         
         let coll = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         coll.register(MovieImageCell.self, forCellWithReuseIdentifier: "Cell")
         coll.backgroundColor = .systemBackground
         coll.delegate = context.coordinator
+        
+        if let collectionLayout = coll.collectionViewLayout as? UICollectionViewFlowLayout {
+            collectionLayout.scrollDirection = self.scrollDirection
+        }
         
         let dataSource = UICollectionViewDiffableDataSource<Int, MovieImage>(collectionView: coll) { (collectionView, indexPath, movieImage)  in
             
@@ -81,7 +100,20 @@ struct CollectionView: UIViewRepresentable {
             let imageUrl = self.urls[indexPath.row]
             
             let resource = ImageResource(downloadURL: imageUrl, cacheKey: movieImage.filePath)
-            cell.imageView.kf.setImage(with: resource, options: [.transition(.fade(0.9))])
+            
+            
+            ImageCache.default.retrieveImage(forKey: movieImage.filePath) { (result) in
+                switch result {
+                case .success(let value):
+                    DispatchQueue.main.async {
+                        cell.imageView.image = value.image
+                    }
+                case .failure :
+                    DispatchQueue.main.async {
+                        cell.imageView.kf.setImage(with: resource, options: [.transition(.fade(0.5))])
+                    }
+                }
+            }
             
             return cell
         }

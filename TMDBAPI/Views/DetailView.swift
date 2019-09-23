@@ -11,31 +11,36 @@ import Combine
 import Kingfisher
 import KingfisherSwiftUI
 
+// MARK: - Main View
 struct DetailView: View {
     
+    // MARK: Properties
     @ObservedObject var fetcher = Fetcher()
-    
     
     @State private var _movie = Movie.placeholder
     @State private var moviePosterPath = ""
     @State private var genres = [Genre]()
     @State private var reviews = [Review]()
-    @State var coverImageHeight: CGFloat = 0.0
-    @State var budget: Double = 0.0
-    @State var revenue: Double = 0.0
-    @State var productionCompanies: [ProductionCompany] = []
-    @State var productionCountries: [ProductionCountry] = []
-    @State var images = [MovieImage]()
+    @State private var budget: Double = 0.0
+    @State private var revenue: Double = 0.0
+    @State private var productionCompanies = [ProductionCompany]()
+    @State private var productionCountries = [ProductionCountry]()
+    @State private var images = [MovieImage]()
+    @State private var movieImagesCounting = false
+    @State private var selection: Int? = nil
+    @State private var isMovieImageViewerShown = false
+    @State private var selectedImage = (UIImage(), CGFloat())
     
     let movie: Movie
     
+    // MARK: Initialization
     init(movie: Movie) {
         self.movie = movie
         self.fetcher.fetchMovieDetails(movie)
         self.fetcher.fetchMovieReviews(movie)
     }
     
-    
+    // MARK: Views
     var topSection: some View {
         ZStack(alignment: .bottomLeading) {
             ZStack {
@@ -47,7 +52,7 @@ struct DetailView: View {
             self.detailsView
         }.listRowInsets(EdgeInsets.zero)
     }
-    //.cornerRadius(20)
+    
     var body: some View {
         GeometryReader { g in
             List {
@@ -55,13 +60,13 @@ struct DetailView: View {
                         .frame(height: g.size.height * 0.9)
                 self.ratingView
                 self.overviewView
-              
-                Section(header: Text("Extra Details").bold()) {
+              //(header: Text("Extra Details").bold())
+                Section {
                     self.extraDetailsView.environment(\.lineSpacing, 5)
                 }
-                
-                Section(header: Text("Images & Videos").bold()) {
-                    self.imagesView
+                //(header: self.ImagesViewSectionHeader)
+                Section(header: self.ImagesViewSectionHeader) {
+                    self.movieImagesView//.frame(maxHeight: .infinity)
                 }
             }
         }
@@ -70,6 +75,15 @@ struct DetailView: View {
             DispatchQueue.main.async {
                 self.setupWithMovie(movie)
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .DidSelectImage)) { image in
+            guard let notificationObject = image.object as? (UIImage, CGFloat) else { return }
+            self.selectedImage = notificationObject
+            
+            self.isMovieImageViewerShown = true
+        }
+        .sheet(isPresented: self.$isMovieImageViewerShown, onDismiss: { self.isMovieImageViewerShown = false}) {
+            MovieImageViewerView(selectedImage: self.selectedImage)
         }
     }
 }
@@ -92,7 +106,8 @@ extension DetailView {
                     Text("•").font(.headline).foregroundColor(Color(.systemYellow))
                     Text(_movie.runtime!.toTime)
                 }
-            }.foregroundColor(.white)
+            }
+            .foregroundColor(.white)
                         
             if !_movie._videos.isEmpty {
                 trailerButton
@@ -131,7 +146,6 @@ extension DetailView {
             .padding([.leading,.vertical],5)
         }
         .padding(.leading, -5)
-       // .padding(.trailing, -20)
     }
     
     // MARK: Rating View
@@ -168,66 +182,56 @@ extension DetailView {
     var trailerButton: some View {
         Button(action: { self.playTrailer() }) {
             HStack(spacing: 5) {
-                Image(systemName: "play").imageScale(.small)
-                Text("TRAILER").font(.subheadline)
-            }.foregroundColor(.init(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 1))).padding(.vertical, 5)
+                Image(systemName: "play")
+                    .imageScale(.small)
+                Text("TRAILER")
+                    .font(.subheadline)
+            }.foregroundColor(.init(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)))
+                .padding(.vertical, 5)
         }
-        .padding(.horizontal)
-        .background(Color.init(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)))
-        .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemYellow)))//.opacity(0.7))
+            .padding(.horizontal)
+            .background(Color.init(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)))
+            .cornerRadius(20)
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemYellow)))
     }
     
     // MARK: Overview
     var overviewView: some View {
         Text("\(_movie.overview)")
             .padding(.vertical, 10)
+            .layoutPriority(1)
     }
     
     // MARK: Extra Details
     var extraDetailsView: some View {
         Group {
-            Group {
-                Text("Spoken Languages:\n").bold() + Text(_movie.languages)
-                Text("Budget: ").bold() + Text("\(self.budget.toCurrency ?? "")")
-                Text("Revenue: ").bold() + Text("\(self.revenue.toCurrency ?? "")")
+           VStack(alignment: .leading, spacing: 10) {
+                Text("Spoken Languages:").bold()
+                Text(_movie.languages).layoutPriority(1)
             }
-           
+            Text("Budget: ").bold() + Text("\(self.budget.toCurrency ?? "")")
+            Text("Revenue: ").bold() + Text("\(self.revenue.toCurrency ?? "")")
+            
             Group {
-                NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)) {
-                    VStack {
-                        Text("Production Companies:").bold()
-                                               
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Production Companies:").bold()
+                    NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)) {
                         Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
-                        .layoutPriority(1)
-                    }
+                    }.layoutPriority(1)
                 }
-                
-                Text("Production Countries:\n").bold()
-                    +
-                Text("\(self.productionCountries.compactMap {$0.name}.joined(separator: "\n"))")
+              
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Production Countries:").bold()
+                    Text("\(self.productionCountries.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
+                }
             }
         }
     }
     
-    @ViewBuilder
-    var imagesView: some View {
-        if _movie.imagesUrls.count <= 3 {
-            HStack {
-                ForEach(_movie.imagesUrls[0..<_movie.imagesUrls.count], id: \.self) {url in
-                    KFImage(url)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(minHeight:40, maxHeight: 120)
-                }
-            }
-        } else {
-            NavigationLink(destination: ImagesView(movie: _movie, images: self.images)) {
-                Text("\(_movie.imagesUrls.count) ").bold() + Text("Images")
-            }
-        }
+    // MARK: Movie Images
+    var movieImagesView: some View {
+        _movie.movieImages.count > 4 ? MovieImagesView(data: Array(_movie.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(_movie.movieImages[0..<_movie.movieImages.count]))
     }
-    
 }
 
 // MARK: - HELPERS
@@ -260,7 +264,11 @@ extension DetailView {
         
         if let unwrappedImages = movie.images {
 
-            self.images = unwrappedImages.posters//.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
+            self.images = unwrappedImages.posters
+            
+            if unwrappedImages.posters.count > 4 {
+                self.movieImagesCounting.toggle()
+            }
             
         }
     }
@@ -287,5 +295,21 @@ extension DetailView {
     var detailsSectionHeader: some View {
         Text("Details").bold().background(Color.white).frame(maxWidth: .infinity)
     }
+    
+    // MARK: Movie Images Section Header
+    var ImagesViewSectionHeader: some View {
+        HStack {
+            Text("Images").bold()
+            Spacer()
+            if self.movieImagesCounting {
+                NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.images), tag: 1, selection: self.$selection) {
+                    Button("See All") {
+                        self.selection = 1
+                    }.foregroundColor(Color(.systemBlue))
+                }.fixedSize()
+            }
+        }
+    }
 }
+
 

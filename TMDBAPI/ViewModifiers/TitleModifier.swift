@@ -18,3 +18,14 @@ struct TitleModifier: ViewModifier {
             .lineLimit(4)
     }
 }
+
+struct CompanyImageModifier: ViewModifier {
+    
+    func body(content: Content) -> some View {
+        content
+            .scaledToFit()
+            .frame(width: 80, height: 100)
+            .padding(2)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1).opacity(0.5))
+    }
+}
