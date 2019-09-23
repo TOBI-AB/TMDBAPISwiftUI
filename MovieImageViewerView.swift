@@ -24,14 +24,14 @@ struct MovieImageViewerView: View {
                     Image(systemName: "xmark.circle.fill")
                         .frame(width: 25, height: 25)
                         .foregroundColor(.black)
-                }.padding([.top, .trailing])
+                }.padding([.top, .trailing], 10)
             }
             Image(uiImage: selectedImage.0)
                 .resizable()
                 .aspectRatio(selectedImage.1, contentMode: .fit)
                 .layoutPriority(1)
             Spacer()
-        }.frame(minHeight: 0, maxHeight: .infinity)
+        }
     }
 }
 

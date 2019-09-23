@@ -25,7 +25,7 @@ struct DetailView: View {
     @State private var revenue: Double = 0.0
     @State private var productionCompanies = [ProductionCompany]()
     @State private var productionCountries = [ProductionCountry]()
-    @State private var images = [MovieImage]()
+    @State private var movieImages = [MovieImage]()
     @State private var movieImagesCounting = false
     @State private var selection: Int? = nil
     @State private var isMovieImageViewerShown = false
@@ -57,7 +57,7 @@ struct DetailView: View {
         GeometryReader { g in
             List {
                 self.topSection
-                        .frame(height: g.size.height * 0.9)
+                    .frame(height: g.frame(in: .global).size.height * 0.9)
                 self.ratingView
                 self.overviewView
               //(header: Text("Extra Details").bold())
@@ -66,7 +66,7 @@ struct DetailView: View {
                 }
                 //(header: self.ImagesViewSectionHeader)
                 Section(header: self.ImagesViewSectionHeader) {
-                    self.movieImagesView//.frame(maxHeight: .infinity)
+                    self.movieImagesView
                 }
             }
         }
@@ -89,7 +89,7 @@ struct DetailView: View {
 }
 
 
-// MARK: - ROWS ViEW
+// MARK: - ROWS ViEWs
 extension DetailView {
     
     // MARK: Movie Poster
@@ -205,14 +205,21 @@ extension DetailView {
     // MARK: Extra Details
     var extraDetailsView: some View {
         Group {
-           VStack(alignment: .leading, spacing: 10) {
+            
+            // MARK: Spoken Language
+            VStack(alignment: .leading, spacing: 10) {
                 Text("Spoken Languages:").bold()
                 Text(_movie.languages).layoutPriority(1)
             }
+            
+            // MARK: Budget
             Text("Budget: ").bold() + Text("\(self.budget.toCurrency ?? "")")
+            
+            // MARK: Revenue
             Text("Revenue: ").bold() + Text("\(self.revenue.toCurrency ?? "")")
             
             Group {
+                // MARK: Production Companies
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Production Companies:").bold()
                     NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)) {
@@ -220,6 +227,7 @@ extension DetailView {
                     }.layoutPriority(1)
                 }
               
+                // MARK: Production Countries
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Production Countries:").bold()
                     Text("\(self.productionCountries.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
@@ -264,7 +272,7 @@ extension DetailView {
         
         if let unwrappedImages = movie.images {
 
-            self.images = unwrappedImages.posters
+            self.movieImages = unwrappedImages.posters
             
             if unwrappedImages.posters.count > 4 {
                 self.movieImagesCounting.toggle()
@@ -291,9 +299,14 @@ extension DetailView {
     }
 }
 
+// MARK: Section Headers
 extension DetailView {
+   
     var detailsSectionHeader: some View {
-        Text("Details").bold().background(Color.white).frame(maxWidth: .infinity)
+        Text("Details")
+            .bold()
+            .background(Color.white)
+            .frame(maxWidth: .infinity)
     }
     
     // MARK: Movie Images Section Header
@@ -302,7 +315,7 @@ extension DetailView {
             Text("Images").bold()
             Spacer()
             if self.movieImagesCounting {
-                NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.images), tag: 1, selection: self.$selection) {
+                NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.movieImages), tag: 1, selection: self.$selection) {
                     Button("See All") {
                         self.selection = 1
                     }.foregroundColor(Color(.systemBlue))

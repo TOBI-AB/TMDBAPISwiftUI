@@ -19,19 +19,7 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
         guard let dataSource = self.dataSource else { return }
         guard let selectedMovieImage = dataSource.itemIdentifier(for: indexPath) else { return }
         
-        ImageCache.default.getImage(for: selectedMovieImage)/*retrieveImage(forKey: selectedMovieImage.filePath) { res in
-            do {
-                let img = try res.get().image
-               
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: NSNotification.Name.DidSelectImage,
-                                                    object: (img, CGFloat(selectedMovieImage.aspectRatio)))
-                }
-                
-            } catch {
-                debugPrint("Error getting cached image: \(error)")
-            }
-        }*/
+        ImageCache.default.getImage(for: selectedMovieImage)
     }
     
     // MARK: Collection Flow Delegate
@@ -46,18 +34,6 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
             let _itemWidth = (collectionView.frame.width / 3)  - (collectionViewLayout.sectionInset.left + collectionViewLayout.sectionInset.right) - 10
             return _itemWidth
         }
-        
-        /*var itemHeight: CGFloat = 0.0
-        
-        switch collectionViewLayout.scrollDirection {
-        case .horizontal:
-            itemHeight = itemWidth / CGFloat(selectedMovieImage.aspectRatio) - collectionViewLayout.sectionInset.top - collectionViewLayout.sectionInset.bottom
-        case .vertical:
-            itemHeight = itemWidth / CGFloat(selectedMovieImage.aspectRatio)
-        default:
-            break
-        }*/
-        
         
         return CGSize(width: itemWidth, height: itemWidth / CGFloat(selectedMovieImage.aspectRatio))
     }
@@ -101,20 +77,7 @@ struct CollectionView: UIViewRepresentable {
             
             let resource = ImageResource(downloadURL: imageUrl, cacheKey: movieImage.filePath)
             
-            
-            ImageCache.default.retrieveImage(forKey: movieImage.filePath) { (result) in
-                switch result {
-                case .success(let value):
-                    DispatchQueue.main.async {
-                        cell.imageView.image = value.image
-                    }
-                case .failure :
-                    DispatchQueue.main.async {
-                        cell.imageView.kf.setImage(with: resource, options: [.transition(.fade(0.5))])
-                    }
-                }
-            }
-            
+            cell.imageView.kf.setImage(with: resource, options: [.transition(.fade(0.5))])
             return cell
         }
         
