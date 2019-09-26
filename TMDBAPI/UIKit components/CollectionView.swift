@@ -11,7 +11,7 @@ import Kingfisher
 
 // MARK: - Collection View Coordinator
 class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-        
+    
     var dataSource: UICollectionViewDiffableDataSource<Int, MovieImage>?
     
     // MARK: Collection Delegate
@@ -19,11 +19,12 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
         guard let dataSource = self.dataSource else { return }
         guard let selectedMovieImage = dataSource.itemIdentifier(for: indexPath) else { return }
         
-        ImageCache.default.getImage(for: selectedMovieImage)
+        ImageCache.default.notifyImageSelection(for: selectedMovieImage, notificationName: .collectionViewDidSelectedImage)
     }
     
     // MARK: Collection Flow Delegate
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+     
         guard let dataSource = self.dataSource else { return .zero }
         guard let selectedMovieImage = dataSource.itemIdentifier(for: indexPath) else { return .zero }
         guard let collectionViewLayout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else {
@@ -31,7 +32,7 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
         }
         
         var itemWidth: CGFloat {
-            let _itemWidth = (collectionView.frame.width / 3)  - (collectionViewLayout.sectionInset.left + collectionViewLayout.sectionInset.right) - 10
+            let _itemWidth = (collectionView.frame.width / 3) - 10
             return _itemWidth
         }
         
@@ -41,6 +42,7 @@ class Coordinator: NSObject, UICollectionViewDelegate, UICollectionViewDelegateF
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
     }
+    
 }
 
 // MARK: - Collection View
@@ -48,16 +50,8 @@ struct CollectionView: UIViewRepresentable {
     
     typealias UIViewType = UICollectionView
     
-    let arr: [MovieImage]
-    var urls = [URL]()
-    let scrollDirection: UICollectionView.ScrollDirection
+    let data: [MovieImage]
     
-    init(data: [MovieImage], scrollDirection: UICollectionView.ScrollDirection = .vertical) {
-        self.arr = data
-        self.urls = data.compactMap { TMDBAPI.getMoviePosterUrl($0.filePath) }
-        self.scrollDirection = scrollDirection
-    }
-  
     func makeUIView(context: UIViewRepresentableContext<CollectionView>) -> UICollectionView {
         
         let coll = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -65,15 +59,11 @@ struct CollectionView: UIViewRepresentable {
         coll.backgroundColor = .systemBackground
         coll.delegate = context.coordinator
         
-        if let collectionLayout = coll.collectionViewLayout as? UICollectionViewFlowLayout {
-            collectionLayout.scrollDirection = self.scrollDirection
-        }
-        
         let dataSource = UICollectionViewDiffableDataSource<Int, MovieImage>(collectionView: coll) { (collectionView, indexPath, movieImage)  in
             
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as? MovieImageCell else { return nil }
             
-            let imageUrl = self.urls[indexPath.row]
+            let imageUrl = self.data.compactMap({ TMDBAPI.getMoviePosterUrl($0.filePath) })[indexPath.row]
             
             let resource = ImageResource(downloadURL: imageUrl, cacheKey: movieImage.filePath)
             
@@ -99,7 +89,7 @@ struct CollectionView: UIViewRepresentable {
     private func populate(dataSource: UICollectionViewDiffableDataSource<Int, MovieImage>) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, MovieImage>()
         snapshot.appendSections([0])
-        snapshot.appendItems(arr)
+        snapshot.appendItems(data)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 }

@@ -110,7 +110,7 @@ struct MovieGenre: Codable {
 }
 
 struct MovieImage: Codable, Hashable, Identifiable {
-    var id: Int = 0
+    var id = UUID()
     
     let aspectRatio: Double
     let filePath: String

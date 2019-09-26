@@ -10,18 +10,17 @@ import SwiftUI
 import Kingfisher
 
 extension ImageCache {
-    func getImage(for movieImage: MovieImage) {
-        ImageCache.default.retrieveImage(forKey: movieImage.filePath) { res in
-            do {
-                let img = try res.get().image
-                                
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: NSNotification.Name.DidSelectImage,
-                                                    object: (img, CGFloat(movieImage.aspectRatio)))
-                }
+    func notifyImageSelection(for movieImage: MovieImage, notificationName: Notification.Name) {
                 
-            } catch {
-                debugPrint("Error getting cached image: \(error)")
+        ImageCache.default.retrieveImage(forKey: movieImage.filePath) { res in
+            switch res {
+            case .success(let res):
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: notificationName,
+                                                    object: (res.image, CGFloat(movieImage.aspectRatio)))
+                }
+            case .failure(let error):
+                debugPrint("Error getting image from cache: \(error.errorDescription ?? "")")
             }
         }
     }

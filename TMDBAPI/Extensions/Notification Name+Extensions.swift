@@ -10,6 +10,6 @@ import Foundation
 
 extension Notification.Name {
     
-    static let DidSelectImage = Notification.Name("image")
-    
+    static let collectionViewDidSelectedImage = Notification.Name("collectionViewDidSelectedImage")
+    static let imagesSectionDidSelectedImage = Notification.Name("imagesSectionDidSelectedImage")
 }

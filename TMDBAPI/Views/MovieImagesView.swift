@@ -13,13 +13,15 @@ import KingfisherSwiftUI
 struct MovieImagesView: View {
     
     let data: [MovieImage]
+    @State private var selection: Int?
+     @State private var selectedImage = (UIImage(), CGFloat())
     
     var body: some View {
         HStack {
             ForEach(data, id: \.self) {movieImage in
                 MovieImageView(movieImage: movieImage)
             }
-        }
+        }.padding(.vertical, 5)
     }
     
     struct MovieImageView: View {
@@ -28,11 +30,12 @@ struct MovieImagesView: View {
         var body: some View {
             KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(movieImage.filePath)!,
                                                    cacheKey: movieImage.filePath)))
-            .resizable()
-            .scaledToFit()//aspectRatio(CGFloat(movieImage.aspectRatio), contentMode: .fit)
-            .onTapGesture {
-                ImageCache.default.getImage(for: self.movieImage)
-            }
+                .resizable()
+                .aspectRatio(CGFloat(movieImage.aspectRatio), contentMode: .fit)
+                .onTapGesture {
+                    ImageCache.default.notifyImageSelection(for: self.movieImage,
+                                                            notificationName: .imagesSectionDidSelectedImage)
+                }
         }
     }
 }

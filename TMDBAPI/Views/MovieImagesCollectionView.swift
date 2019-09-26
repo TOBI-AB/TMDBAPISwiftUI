@@ -13,8 +13,9 @@ struct MovieImagesCollectionView: View {
     
     @State private var url = [URL]()
     @State private var movieImage = UIImage()
-    @State private var isModalShown = false
     @State private var selectedImage = (UIImage(), CGFloat())
+    @State private var selection: Int?
+    @State private var isModalShown = false
     
     let movie: Movie
     var movieImages: [MovieImage]
@@ -25,21 +26,18 @@ struct MovieImagesCollectionView: View {
     }
     
     var body: some View {
-        
         CollectionView(data: self.movieImages)
             .navigationBarTitle(Text("\(self.movie.originalTitle) images"), displayMode: .inline)
-            .onReceive(NotificationCenter.default.publisher(for: .DidSelectImage)) { image in
-                
+            .onReceive(NotificationCenter.default.publisher(for: .collectionViewDidSelectedImage)) { image in
                 guard let notificationObject = image.object as? (UIImage, CGFloat) else { return }
                 
                 self.selectedImage = notificationObject
+                self.selection = 3
                 self.isModalShown.toggle()
-            }
-            .sheet(isPresented: self.$isModalShown, onDismiss: {
-                self.isModalShown = false
-            }) {
-                MovieImageViewerView(selectedImage: self.selectedImage)
-            }
+		}
+        .sheet(isPresented: self.$isModalShown) {
+            MovieImageViewerView(selectedImage: self.selectedImage)
+        }
     }
 }
 

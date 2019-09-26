@@ -10,28 +10,18 @@ import SwiftUI
 
 struct MovieImageViewerView: View {
     
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.presentationMode) var isPresented
     
-    var selectedImage: (UIImage, CGFloat)
-   
+    let selectedImage: (UIImage, CGFloat)
+    
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Spacer()
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .frame(width: 25, height: 25)
-                        .foregroundColor(.black)
-                }.padding([.top, .trailing], 10)
-            }
+        NavigationView {
             Image(uiImage: selectedImage.0)
-                .resizable()
-                .aspectRatio(selectedImage.1, contentMode: .fit)
-                .layoutPriority(1)
-            Spacer()
+            .resizable()
+            .aspectRatio(selectedImage.1, contentMode: .fit)
+            .padding(.horizontal, 1)
+            .navigationBarTitle(Text(""), displayMode: .inline)
+            .navigationBarItems(trailing: Button("Done") { self.isPresented.wrappedValue.dismiss() })
         }
     }
 }
-

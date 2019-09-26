@@ -27,9 +27,11 @@ struct DetailView: View {
     @State private var productionCountries = [ProductionCountry]()
     @State private var movieImages = [MovieImage]()
     @State private var movieImagesCounting = false
-    @State private var selection: Int? = nil
-    @State private var isMovieImageViewerShown = false
+    @State private var imageLinkSelection: Int? = nil
+    @State private var productionCompanyLinkSelection: Int? = nil
+    @State private var isModalShown = false
     @State private var selectedImage = (UIImage(), CGFloat())
+
     
     let movie: Movie
     
@@ -60,11 +62,11 @@ struct DetailView: View {
                     .frame(height: g.frame(in: .global).size.height * 0.9)
                 self.ratingView
                 self.overviewView
-              //(header: Text("Extra Details").bold())
+
                 Section {
                     self.extraDetailsView.environment(\.lineSpacing, 5)
                 }
-                //(header: self.ImagesViewSectionHeader)
+ 
                 Section(header: self.ImagesViewSectionHeader) {
                     self.movieImagesView
                 }
@@ -76,13 +78,14 @@ struct DetailView: View {
                 self.setupWithMovie(movie)
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .DidSelectImage)) { image in
-            guard let notificationObject = image.object as? (UIImage, CGFloat) else { return }
+        .onReceive(NotificationCenter.default.publisher(for: .imagesSectionDidSelectedImage)) { imageInfos in
+            guard let notificationObject = imageInfos.object as? (UIImage, CGFloat) else { return }
+           
             self.selectedImage = notificationObject
-            
-            self.isMovieImageViewerShown = true
+            self.isModalShown = true
+            self.imageLinkSelection = 2
         }
-        .sheet(isPresented: self.$isMovieImageViewerShown, onDismiss: { self.isMovieImageViewerShown = false}) {
+        .sheet(isPresented: self.$isModalShown) {
             MovieImageViewerView(selectedImage: self.selectedImage)
         }
     }
@@ -222,9 +225,15 @@ extension DetailView {
                 // MARK: Production Companies
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Production Companies:").bold()
-                    NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)) {
+                    
+                    HStack {
                         Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
-                    }.layoutPriority(1)
+                            .layoutPriority(1).fixedSize()
+                            .onTapGesture { self.productionCompanyLinkSelection = 2 }
+                        NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies), tag: 2, selection: $productionCompanyLinkSelection) {
+                            Text("")
+                        }
+                    }
                 }
               
                 // MARK: Production Countries
@@ -315,11 +324,15 @@ extension DetailView {
             Text("Images").bold()
             Spacer()
             if self.movieImagesCounting {
-                NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.movieImages), tag: 1, selection: self.$selection) {
-                    Button("See All") {
-                        self.selection = 1
-                    }.foregroundColor(Color(.systemBlue))
-                }.fixedSize()
+                HStack {
+                    NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.movieImages),
+                                   tag: 1,
+                                   selection: self.$imageLinkSelection) {
+                                    EmptyView()
+                    }
+                    Button("See All") { self.imageLinkSelection = 1}
+                        .foregroundColor(Color(.systemBlue))
+                }
             }
         }
     }
