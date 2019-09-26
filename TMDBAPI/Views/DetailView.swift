@@ -223,18 +223,21 @@ extension DetailView {
             
             Group {
                 // MARK: Production Companies
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Production Companies:").bold()
-                    
-                    HStack {
-                        Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
-                            .layoutPriority(1).fixedSize()
-                            .onTapGesture { self.productionCompanyLinkSelection = 2 }
-                        NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies), tag: 2, selection: $productionCompanyLinkSelection) {
-                            Text("")
-                        }
-                    }
-                }
+				HStack {
+					VStack(alignment: .leading, spacing: 10) {
+						Text("Production Companies:").bold()
+						
+						Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
+							
+							.onTapGesture { self.productionCompanyLinkSelection = 2 }
+						
+					}
+					.layoutPriority(1)
+					.fixedSize()
+					NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies), tag: 2, selection: $productionCompanyLinkSelection) {
+						Text("")
+					}
+				}
               
                 // MARK: Production Countries
                 VStack(alignment: .leading, spacing: 10) {
