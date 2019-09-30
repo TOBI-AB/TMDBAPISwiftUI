@@ -19,6 +19,7 @@ enum Endpoint {
     case reviews(Int)
     case company(Int)
     case images(Int)
+	case credits(Int)
     
     var rawValue: String {
         switch self {
@@ -42,6 +43,8 @@ enum Endpoint {
             return "/company/\(id)"
         case .images(let id):
             return "/movie/\(id)/images"
+		case .credits(let id):
+			return "/movie/\(id)/credits"
         }
     }
 }
@@ -75,8 +78,8 @@ extension TMDBAPI {
     }
     
     static func getMoviePosterUrl(_ posterPath: String?) -> URL? {
-        guard let unwrappedPosterPath = posterPath else { return nil }
-        let posterUrlString = "https://image.tmdb.org/t/p/w500".appending(unwrappedPosterPath)
+        guard let wrappedPosterPath = posterPath else { return nil }
+        let posterUrlString = "https://image.tmdb.org/t/p/w500".appending(wrappedPosterPath)
         
         guard let posterUrl = URL(string: posterUrlString) else {
             return nil

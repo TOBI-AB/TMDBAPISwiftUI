@@ -17,21 +17,21 @@ struct DetailView: View {
     // MARK: Properties
     @ObservedObject var fetcher = Fetcher()
     
-    @State private var _movie = Movie.placeholder
+    @State private var _movieDetails = Movie.placeholder
     @State private var moviePosterPath = ""
     @State private var genres = [Genre]()
     @State private var reviews = [Review]()
     @State private var budget: Double = 0.0
     @State private var revenue: Double = 0.0
     @State private var productionCompanies = [ProductionCompany]()
+	@State private var productionCompanyLinkSelection: Int? = nil
     @State private var productionCountries = [ProductionCountry]()
     @State private var movieImages = [MovieImage]()
     @State private var movieImagesCounting = false
     @State private var imageLinkSelection: Int? = nil
-    @State private var productionCompanyLinkSelection: Int? = nil
     @State private var isModalShown = false
     @State private var selectedImage = (UIImage(), CGFloat())
-
+	@State private var creditPickerSelection = 0
     
     let movie: Movie
     
@@ -39,20 +39,22 @@ struct DetailView: View {
     init(movie: Movie) {
         self.movie = movie
         self.fetcher.fetchMovieDetails(movie)
-        self.fetcher.fetchMovieReviews(movie)
+		self.fetcher.fetchMovieReviews(movie)
     }
     
     // MARK: Views
     var topSection: some View {
         ZStack(alignment: .bottomLeading) {
             ZStack {
-                KFImage(TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!)
+                KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(self.moviePosterPath)!,cacheKey: self.moviePosterPath)))
                     .resizable()
                     .cancelOnDisappear(true)
-                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .top, endPoint: .bottom)
+                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
             }
-            self.detailsView
-        }.listRowInsets(EdgeInsets.zero)
+        
+			self.detailsView
+     
+		}.listRowInsets(EdgeInsets.zero)
     }
     
     var body: some View {
@@ -69,13 +71,25 @@ struct DetailView: View {
  
                 Section(header: self.ImagesViewSectionHeader) {
                     self.movieImagesView
-                }
-            }
+				}
+				Section(header: Text("CREDITS").bold()) {
+					
+					self.picker.padding(.vertical, 2)
+					
+					MovieCastView(movie: self.movie)
+						.frame(minHeight: g.frame(in: .global).size.height * 0.25)
+						.environmentObject(self.fetcher)
+						.onAppear { self.fetcher.fetchMovieCredits(self.movie)
+							
+					}
+					
+				}
+			}
         }
-        .navigationBarTitle(Text(""), displayMode: .inline)
-        .onReceive(self.fetcher.$movieDetails) { (movie) in
+		.navigationBarTitle(Text(verbatim: movie.title), displayMode: .inline)
+        .onReceive(self.fetcher.$movieDetails) { (movieDetails) in
             DispatchQueue.main.async {
-                self.setupWithMovie(movie)
+                self.setupWithMovie(movieDetails)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .imagesSectionDidSelectedImage)) { imageInfos in
@@ -88,7 +102,7 @@ struct DetailView: View {
         .sheet(isPresented: self.$isModalShown) {
             MovieImageViewerView(selectedImage: self.selectedImage)
         }
-    }
+    }	
 }
 
 
@@ -104,15 +118,15 @@ extension DetailView {
             genresView
             
             HStack {
-                Text(verbatim: _movie.releaseDate)
-                if _movie.runtime != nil {
+                Text(verbatim: _movieDetails.releaseDate)
+                if _movieDetails.runtime != nil {
                     Text("•").font(.headline).foregroundColor(Color(.systemYellow))
-                    Text(_movie.runtime!.toTime)
+                    Text(_movieDetails.runtime!.toTime)
                 }
             }
             .foregroundColor(.white)
                         
-            if !_movie._videos.isEmpty {
+            if !_movieDetails._videos.isEmpty {
                 trailerButton
             }
        
@@ -122,12 +136,12 @@ extension DetailView {
     // MARK: Title View
     var titleView: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(_movie.originalTitle.uppercased())
+            Text(_movieDetails.originalTitle.uppercased())
                 .bold()
                 .modifier(TitleModifier())
             
-            if _movie.originalTitle != _movie.title {
-                Text(_movie.title)
+            if _movieDetails.originalTitle != _movieDetails.title {
+                Text(_movieDetails.title)
                     .bold()
                     .modifier(TitleModifier())
             }
@@ -157,22 +171,22 @@ extension DetailView {
             VStack(alignment: .center, spacing: 10) {
                 Text("RATING")
                     .font(.subheadline)
-                Text(verbatim: "\(_movie.voteAverage)")
+                Text(verbatim: "\(_movieDetails.voteAverage)")
                     .font(.headline)
             }
             Divider()
             VStack(alignment: .center, spacing: 10) {
                 Text("VOTES")
                     .font(.subheadline)
-                Text(verbatim: "\(_movie.voteCount)")
+                Text(verbatim: "\(_movieDetails.voteCount)")
                     .font(.headline)
             }
-            if _movie.popularity != nil {
+            if _movieDetails.popularity != nil {
                 Divider()
                 VStack(alignment: .center, spacing: 10) {
                     Text("POPULARITY")
                         .font(.subheadline)
-                    Text(verbatim: "\(_movie.popularity!)")
+                    Text(verbatim: "\(_movieDetails.popularity!)")
                         .font(.headline)
                 }
             }
@@ -200,7 +214,7 @@ extension DetailView {
     
     // MARK: Overview
     var overviewView: some View {
-        Text("\(_movie.overview)")
+        Text("\(_movieDetails.overview)")
             .padding(.vertical, 10)
             .layoutPriority(1)
     }
@@ -210,54 +224,45 @@ extension DetailView {
         Group {
             
             // MARK: Spoken Language
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Spoken Languages:").bold()
-                Text(_movie.languages).layoutPriority(1)
-            }
-            
+			VStack(alignment: .leading) {
+				Text("Spoken Languages:")
+					.bold()
+					.padding(.vertical, 2)
+				
+				Text(_movieDetails.languages)
+					.layoutPriority(1)
+			}
             // MARK: Budget
-            Text("Budget: ").bold() + Text("\(self.budget.toCurrency ?? "")")
+            Text("Budget:\n").bold() + Text("\(self.budget.toCurrency ?? "")")
             
             // MARK: Revenue
-            Text("Revenue: ").bold() + Text("\(self.revenue.toCurrency ?? "")")
+            Text("Revenue:\n").bold() + Text("\(self.revenue.toCurrency ?? "")")
             
+			// MARK: Production Companies & Production Countries
             Group {
-                // MARK: Production Companies
-				HStack {
-					VStack(alignment: .leading, spacing: 10) {
-						Text("Production Companies:").bold()
-						
-						Text("\(self.productionCompanies.compactMap { "\($0.name)" }.joined(separator: "\n"))")
-							
-							.onTapGesture { self.productionCompanyLinkSelection = 2 }
-						
-					}
-					.layoutPriority(1)
-					.fixedSize()
-					NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies), tag: 2, selection: $productionCompanyLinkSelection) {
-						Text("")
-					}
-				}
-              
-                // MARK: Production Countries
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Production Countries:").bold()
+                //  Production Countries
+                VStack(alignment: .leading) {
+					Text("Production Countries:").bold().padding(.vertical, 2)
                     Text("\(self.productionCountries.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
                 }
+				
+				NavigationLink(destination: ProductionCompaniesView(productionCompanies: productionCompanies)){//}, tag: 2, selection: $productionCompanyLinkSelection) {
+					Text("Production Companies").padding(.vertical, 2)//Text("")
+				}
             }
         }
     }
     
     // MARK: Movie Images
     var movieImagesView: some View {
-        _movie.movieImages.count > 4 ? MovieImagesView(data: Array(_movie.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(_movie.movieImages[0..<_movie.movieImages.count]))
+        _movieDetails.movieImages.count > 4 ? MovieImagesView(data: Array(_movieDetails.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(_movieDetails.movieImages[0..<_movieDetails.movieImages.count]))
     }
 }
 
 // MARK: - HELPERS
 extension DetailView {
     fileprivate func setupWithMovie(_ movie: Movie) {
-        self._movie = movie
+        self._movieDetails = movie
         
         if let posterPath = movie.posterPath {
             self.moviePosterPath = posterPath
@@ -297,7 +302,7 @@ extension DetailView {
         
         var trailerKey = ""
         
-        guard let unwrappedVideos = _movie.videos else { return }
+        guard let unwrappedVideos = _movieDetails.videos else { return }
         
         let trailers = unwrappedVideos.results.filter { $0.type == "Trailer" }.sorted { $0.size > $1.size }
         
@@ -311,7 +316,7 @@ extension DetailView {
     }
 }
 
-// MARK: Section Headers
+// MARK: -
 extension DetailView {
    
     var detailsSectionHeader: some View {
@@ -324,11 +329,11 @@ extension DetailView {
     // MARK: Movie Images Section Header
     var ImagesViewSectionHeader: some View {
         HStack {
-            Text("Images").bold()
+            Text("IMAGES").bold()
             Spacer()
             if self.movieImagesCounting {
                 HStack {
-                    NavigationLink(destination: MovieImagesCollectionView(movie: _movie, images: self.movieImages),
+                    NavigationLink(destination: MovieImagesCollectionView(movie: _movieDetails, images: self.movieImages),
                                    tag: 1,
                                    selection: self.$imageLinkSelection) {
                                     EmptyView()
@@ -339,6 +344,15 @@ extension DetailView {
             }
         }
     }
+	
+	// MARK: Credits Picker
+	var picker: some View {
+		Picker(selection: self.$fetcher.creditPickerSelection, label: Text("")) {
+			Text("Cast").bold().tag(0)
+			Text("Crew").bold().tag(1)
+		}
+		.pickerStyle(SegmentedPickerStyle())
+	}
 }
 
 

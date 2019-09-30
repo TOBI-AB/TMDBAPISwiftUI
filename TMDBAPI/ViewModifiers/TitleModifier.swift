@@ -29,3 +29,15 @@ struct CompanyImageModifier: ViewModifier {
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1).opacity(0.5))
     }
 }
+
+struct CreditImageModifier: ViewModifier {
+	func body(content: Content) -> some View {
+        content
+            .frame(width: 80, height: 80, alignment: .center)
+			.aspectRatio(contentMode: .fit)
+			.clipShape(Circle())
+			.padding(2)
+			.overlay(Circle().strokeBorder(Color(.systemGray).opacity(0.6), lineWidth: 5, antialiased: true))
+			.layoutPriority(1)
+    }
+}
