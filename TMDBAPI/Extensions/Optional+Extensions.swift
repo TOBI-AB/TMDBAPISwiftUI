@@ -8,8 +8,20 @@
 
 import Foundation
 
-//extension Optional where Wrapped == String {
-//    var isOptionalNil: String {
-//        
-//    }
-//}
+extension Optional where Wrapped == String {
+    var isNilAndEmpty: Bool {
+        guard let value = self, !value.isEmpty else {
+            return true
+        }
+        return false
+    }
+}
+
+extension Optional where Wrapped: Collection {
+    var isEmpty: Bool {
+        guard let value = self, !value.isEmpty else {
+            return true
+        }
+        return false
+    }
+}

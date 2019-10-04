@@ -11,7 +11,8 @@ import Foundation
 // MARK: Credit Protocol
 protocol Credit {
 	var type: CreditType { get }
-	var ID: String { get }
+	var ID: Int { get }
+	var creditIdentifier: String { get }
 	var creditName: String { get }
 	var extraInfo: String { get }
 	var creditProfilePath: String? { get }

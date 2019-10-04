@@ -19,8 +19,12 @@ struct Crew: Codable {
 
 extension Crew: Credit {
 	
-	var ID: String {
+	var creditIdentifier: String {
 		creditId
+	}
+	
+	var ID: Int {
+		id
 	}
 	
 	var type: CreditType {

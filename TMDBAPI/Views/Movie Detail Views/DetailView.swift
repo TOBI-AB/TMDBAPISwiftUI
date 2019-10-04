@@ -32,6 +32,7 @@ struct DetailView: View {
     @State private var isModalShown = false
     @State private var selectedImage = (UIImage(), CGFloat())
 	@State private var creditPickerSelection = 0
+	@State private var credits = [Person]()
     
     let movie: Movie
     
@@ -39,7 +40,9 @@ struct DetailView: View {
     init(movie: Movie) {
         self.movie = movie
         self.fetcher.fetchMovieDetails(movie)
-		self.fetcher.fetchMovieReviews(movie)
+		self.fetcher.fetchMovieCredits(movie)
+		//self.fetcher.fetchMovieReviews(movie)
+		
     }
     
     // MARK: Views
@@ -61,7 +64,7 @@ struct DetailView: View {
         GeometryReader { g in
             List {
                 self.topSection
-                    .frame(height: g.frame(in: .global).size.height * 0.9)
+                    .frame(height: g.frame(in: .global).size.height * 0.7)
                 self.ratingView
                 self.overviewView
 
@@ -76,17 +79,16 @@ struct DetailView: View {
 					
 					self.picker.padding(.vertical, 2)
 					
-					MovieCastView(movie: self.movie)
+					MovieCreditsView(movie: self.movie)
 						.frame(minHeight: g.frame(in: .global).size.height * 0.25)
 						.environmentObject(self.fetcher)
-						.onAppear { self.fetcher.fetchMovieCredits(self.movie)
-							
-					}
-					
 				}
 			}
         }
 		.navigationBarTitle(Text(verbatim: movie.title), displayMode: .inline)
+		.onAppear {
+			//self.fetcher.fetchMovieDetails(self.movie)
+		}
         .onReceive(self.fetcher.$movieDetails) { (movieDetails) in
             DispatchQueue.main.async {
                 self.setupWithMovie(movieDetails)
@@ -348,8 +350,12 @@ extension DetailView {
 	// MARK: Credits Picker
 	var picker: some View {
 		Picker(selection: self.$fetcher.creditPickerSelection, label: Text("")) {
-			Text("Cast").bold().tag(0)
-			Text("Crew").bold().tag(1)
+			Text("Cast")
+                .bold()
+                .tag(0)
+			Text("Crew")
+                .bold()
+                .tag(1)
 		}
 		.pickerStyle(SegmentedPickerStyle())
 	}

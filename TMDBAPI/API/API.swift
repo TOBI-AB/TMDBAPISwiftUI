@@ -20,6 +20,7 @@ enum Endpoint {
     case company(Int)
     case images(Int)
 	case credits(Int)
+	case person(Int)
     
     var rawValue: String {
         switch self {
@@ -45,6 +46,8 @@ enum Endpoint {
             return "/movie/\(id)/images"
 		case .credits(let id):
 			return "/movie/\(id)/credits"
+		case .person(let id):
+			return "/person/\(id)"
         }
     }
 }

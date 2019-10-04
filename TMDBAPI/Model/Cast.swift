@@ -25,7 +25,11 @@ extension Cast: Credit {
 		.cast
 	}
 	
-	var ID: String {
+	var ID: Int {
+		id
+	}
+	
+	var creditIdentifier: String {
 		creditId
 	}
 	

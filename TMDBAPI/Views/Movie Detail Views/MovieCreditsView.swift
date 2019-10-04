@@ -12,7 +12,7 @@ import KingfisherSwiftUI
 import Kingfisher
 
 // MARK: - Movie Cast View
-struct MovieCastView: View {
+struct MovieCreditsView: View {
 	
 	@EnvironmentObject var fetcher: Fetcher
 	@State private var credits = [Credit]()
@@ -23,8 +23,8 @@ struct MovieCastView: View {
 		GeometryReader { g in
 				ScrollView(.horizontal, showsIndicators: false) {
 					HStack {
-						ForEach(self.credits, id:\.ID) { credit in
-							MovieCastRow(credit: credit, proxy: g)
+						ForEach(self.credits, id:\.creditIdentifier) { credit in
+							MovieCreditRow(credit: credit, proxy: g).environmentObject(self.fetcher)
 						}
 					}
 				}
@@ -34,35 +34,44 @@ struct MovieCastView: View {
 		}
 	}
 }
-
+//fileprivate
 // MARK: - Movie Cast Row
-extension MovieCastView {
-	fileprivate	struct MovieCastRow: View {
+extension MovieCreditsView {
+	struct MovieCreditRow: View {
+	
+		@EnvironmentObject var fetcher: Fetcher
+		@State private var selection: Int? = nil
 		let credit: Credit
 		let proxy: GeometryProxy
 		
+		init(credit: Credit, proxy: GeometryProxy) {
+			self.credit = credit
+			self.proxy = proxy
+		
+		}
+				
 		@ViewBuilder
 		var bottomView: some View {
-				if credit.creditProfilePath != nil {
-					ZStack {
-						KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(credit.creditProfilePath!)!,cacheKey: credit.creditProfilePath)))
-							.resizable()
-						LinearGradient(gradient: Gradient(colors: [.clear, .black]),
-									   startPoint: .center,
-									   endPoint: .bottom)
-					}
+			if credit.creditProfilePath != nil {
+				ZStack {
+					KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(credit.creditProfilePath!)!,cacheKey: credit.creditProfilePath)))
+						.resizable()
+					LinearGradient(gradient: Gradient(colors: [.clear, .black]),
+								   startPoint: .center,
+								   endPoint: .bottom)
+				}
+				
+			} else {
+				ZStack {
+					Rectangle()
+						.fill(Color(.white))
+					Image(systemName: "person.fill")
+						.foregroundColor(Color(.systemGray).opacity(0.5))
 					
-				} else {
-					ZStack {
-						Rectangle()
-							.fill(Color(.white))
-						Image(systemName: "person.fill")
-							.foregroundColor(Color(.systemGray).opacity(0.5))
-							
-					}
-					.overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color(.systemGray).opacity(0.5),
-																			 lineWidth: 1,
-																			 antialiased: true))
+				}
+				.overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color(.systemGray).opacity(0.5),
+																		 lineWidth: 1,
+																		 antialiased: true))
 			}
 		}
 		
@@ -71,13 +80,13 @@ extension MovieCastView {
 			ZStack(alignment: .bottom) {
 				
 				bottomView
-		
-				VStack(alignment: .center) {
 				
+				VStack(alignment: .center) {
+					
 					Text(verbatim: self.credit.creditName)
 						.font(.system(size: 13)).bold()
 						.lineLimit(1)
-				
+					
 					if !self.credit.extraInfo.isEmpty {
 						Text(verbatim: self.credit.extraInfo)
 							.font(.system(size: 12))
@@ -88,12 +97,16 @@ extension MovieCastView {
 				.foregroundColor(credit.creditProfilePath != nil ? .white : .black)
 				.padding(.horizontal, 5)
 				.padding(.bottom, 5)
+				
+				NavigationLink(destination: PersonView(credit: self.credit).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
+					EmptyView()
+				}
 			}
 			.frame(width: proxy.frame(in: .global).size.width * 0.3, height: proxy.frame(in: .global).size.height)
 			.cornerRadius(10)
 			.onTapGesture {
-				//debugPrint(self.credit.extraInfo, self.credit.type)
-				
+				self.fetcher.fetchPersonDetails(self.credit)
+				self.selection = 0
 			}
 		}
 	}
