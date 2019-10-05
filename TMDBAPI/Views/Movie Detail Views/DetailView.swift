@@ -39,10 +39,9 @@ struct DetailView: View {
     // MARK: Initialization
     init(movie: Movie) {
         self.movie = movie
-        self.fetcher.fetchMovieDetails(movie)
+        self.fetcher.fetchMovieDetails(withId: movie.id)
 		self.fetcher.fetchMovieCredits(movie)
 		//self.fetcher.fetchMovieReviews(movie)
-		
     }
     
     // MARK: Views
@@ -65,30 +64,31 @@ struct DetailView: View {
             List {
                 self.topSection
                     .frame(height: g.frame(in: .global).size.height * 0.7)
+                
                 self.ratingView
+                
                 self.overviewView
 
-                Section {
-                    self.extraDetailsView.environment(\.lineSpacing, 5)
-                }
+                self.extraDetailsView.environment(\.lineSpacing, 5)
  
+                // MARK: Movie Images View
                 Section(header: self.ImagesViewSectionHeader) {
                     self.movieImagesView
 				}
-				Section(header: Text("CREDITS").bold()) {
+			
+                // MARK: Movie Credits View
+                Section(header: Text("CREDITS").bold()) {
 					
-					self.picker.padding(.vertical, 2)
+                    PickerView(selection: self.$fetcher.creditPickerSelection, data: ["Cast", "Crew"])
+                        .padding(.vertical, 2)
 					
-					MovieCreditsView(movie: self.movie)
+					MovieCreditsView()
 						.frame(minHeight: g.frame(in: .global).size.height * 0.25)
 						.environmentObject(self.fetcher)
 				}
 			}
         }
-		.navigationBarTitle(Text(verbatim: movie.title), displayMode: .inline)
-		.onAppear {
-			//self.fetcher.fetchMovieDetails(self.movie)
-		}
+		.navigationBarTitle(Text(verbatim: _movieDetails.title), displayMode: .inline)
         .onReceive(self.fetcher.$movieDetails) { (movieDetails) in
             DispatchQueue.main.async {
                 self.setupWithMovie(movieDetails)
@@ -360,5 +360,3 @@ extension DetailView {
 		.pickerStyle(SegmentedPickerStyle())
 	}
 }
-
-

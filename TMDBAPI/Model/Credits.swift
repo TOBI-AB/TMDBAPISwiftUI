@@ -22,18 +22,15 @@ extension Credit {
 	var creditProfilePath: String? {
 		nil
 	}
+    
+    var type: CreditType {
+        .cast
+    }
 }
 
 // MARK: - Credit Protocol
 enum CreditType: CaseIterable {
 	case cast, crew
-	
-	static var allCases: [CreditType] {
-		[.cast, .crew]
-	}
-	
-	@available(*, unavailable)
-	case all
 }
 
 // MARK: - Credits

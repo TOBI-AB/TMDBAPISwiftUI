@@ -19,43 +19,46 @@ enum Endpoint {
     case reviews(Int)
     case company(Int)
     case images(Int)
-	case credits(Int)
-	case person(Int)
+    case credits(Int)
+    case person(Int)
+    case personeMovies(Int)
     
     var rawValue: String {
         switch self {
-        case .popular:
-            return "/movie/popular"
-        case .upcoming:
-            return "/movie/upcoming"
-        case .topRated:
-            return "/movie/top_rated"
-        case .nowPlaying:
-            return "/movie/now_playing"
-        case .latest:
-            return "/movie/latest"
-        case .details(let id):
-            return "/movie/\(id)"
-        case .genres:
-            return "/genre/movie/list"
-        case .reviews(let id):
-            return "/movie/\(id)/reviews"
-        case .company(let id):
-            return "/company/\(id)"
-        case .images(let id):
-            return "/movie/\(id)/images"
-		case .credits(let id):
-			return "/movie/\(id)/credits"
-		case .person(let id):
-			return "/person/\(id)"
+            case .popular:
+                return "/movie/popular"
+            case .upcoming:
+                return "/movie/upcoming"
+            case .topRated:
+                return "/movie/top_rated"
+            case .nowPlaying:
+                return "/movie/now_playing"
+            case .latest:
+                return "/movie/latest"
+            case .details(let id):
+                return "/movie/\(id)"
+            case .genres:
+                return "/genre/movie/list"
+            case .reviews(let id):
+                return "/movie/\(id)/reviews"
+            case .company(let id):
+                return "/company/\(id)"
+            case .images(let id):
+                return "/movie/\(id)/images"
+            case .credits(let id):
+                return "/movie/\(id)/credits"
+            case .person(let id):
+                return "/person/\(id)"
+            case .personeMovies(let id):
+                return "/person/\(id)/movie_credits"
         }
     }
 }
 
 
 struct TMDBAPI {
-     static private var key = "40e70758e59746255ad62482f1451c70"
-     static private var baseUrl = "https://api.themoviedb.org/3"   
+    static private var key = "40e70758e59746255ad62482f1451c70"
+    static private var baseUrl = "https://api.themoviedb.org/3"
 }
 
 extension TMDBAPI {
@@ -76,7 +79,7 @@ extension TMDBAPI {
         guard let endpointUrl = urlCom?.url else {
             fatalError("----- Error Url \(endpoint.rawValue) -----")
         }
-                
+        
         return endpointUrl
     }
     

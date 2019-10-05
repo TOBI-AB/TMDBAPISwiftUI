@@ -41,7 +41,6 @@ extension String {
     fileprivate func stringArrayWithUnit(_ unit: NSLinguisticTaggerUnit) -> [String] {
         var strArray = [String]()
         let tagger = NSLinguisticTagger(tagSchemes: [.tokenType, .language, .lexicalClass, .nameType, .lemma], options: 0)
-        //let options: NSLinguisticTagger.Options = [.omitPunctuation, .omitWhitespace, .joinNames]
         
         tagger.string = self
         let range = NSRange(location: 0, length: self.utf16.count)

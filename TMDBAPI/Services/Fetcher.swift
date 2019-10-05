@@ -16,9 +16,12 @@ class Fetcher: ObservableObject {
     @Published var genres = [Genre]()
     @Published var reviews = [Review]()
     @Published var images = [MovieImage]()
-	@Published var creditPickerSelection = 0
 	@Published var credits = ([Cast](), [Crew]())
-	@Published var person = Person.placeholder
+    @Published var creditPickerSelection = 0
+    @Published var person = Person.placeholder
+    @Published var personMovies = ([PersonMoviesCast](), [PersonMoviesCrew]())
+    @Published var personMoviesPickerSelection = 0
+	
     
     var moviesCancellable: AnyCancellable?
     var movieDetailsCancellable: AnyCancellable?
@@ -26,13 +29,14 @@ class Fetcher: ObservableObject {
     var imagesCancellable: AnyCancellable?
 	var creditsCancellable: AnyCancellable?
 	var personSubscriber: AnyCancellable?
+    var personMoviesCancellable: AnyCancellable?
     
     init() {
         //self.fetchMovies()
     }
 	
 	deinit {
-		debugPrint(#function)
+        debugPrint(#function,#file)
 		moviesCancellable?.cancel()
 		movieDetailsCancellable?.cancel()
 		reviewsCancellable?.cancel()
@@ -71,10 +75,10 @@ extension Fetcher {
     }
     
 	// MARK: Fetch Movie Details
-    func fetchMovieDetails(_ movie: Movie) {
+    func fetchMovieDetails(withId id: Int) {
         let parameters = ["append_to_response":"videos,images"].compactMapValues { $0.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)}
         
-        let detailsPublisher: AnyPublisher<Movie, Error> = Webservice.shared.getData(atEndpoint: .details(movie.id), parameters: parameters)
+        let detailsPublisher: AnyPublisher<Movie, Error> = Webservice.shared.getData(atEndpoint: .details(id), parameters: parameters)
         
         movieDetailsCancellable = detailsPublisher
             .map { $0 }
@@ -133,9 +137,9 @@ extension Fetcher {
     }
 	
 	// MARK: Fetch Credit Details
-	func fetchPersonDetails(_ credit: Credit) {
+	func fetchPersonDetails(_ person: Credit) {
 				
-		let personPublisher: AnyPublisher<Person, Error> = Webservice.shared.getData(atEndpoint: .person(credit.ID))
+		let personPublisher: AnyPublisher<Person, Error> = Webservice.shared.getData(atEndpoint: .person(person.ID))
 		
 		personSubscriber = personPublisher
 			.map { $0 }
@@ -146,4 +150,19 @@ extension Fetcher {
 		.receive(on: DispatchQueue.main)
 		.assign(to: \.person, on: self)
 	}
+    
+    // MARK: Fetch Person Movies
+    func fetchPersonMovies(_ person: Credit) {
+
+        let personMoviesPublisher: AnyPublisher<PersonMovies, Error> = Webservice.shared.getData(atEndpoint: .personeMovies(person.ID))
+        
+        personMoviesCancellable = personMoviesPublisher
+            .map { ($0.cast, $0.crew) }
+            .catch { err -> Just<([PersonMoviesCast], [PersonMoviesCrew])> in
+                debugPrint("Person Movie error -> \(err)")
+                return Just(([], []))
+            }
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.personMovies, on: self)
+    }
 }

@@ -14,7 +14,7 @@ struct MovieImagesView: View {
     
     let data: [MovieImage]
     @State private var selection: Int?
-     @State private var selectedImage = (UIImage(), CGFloat())
+    @State private var selectedImage = (UIImage(), CGFloat())
     
     var body: some View {
         HStack {

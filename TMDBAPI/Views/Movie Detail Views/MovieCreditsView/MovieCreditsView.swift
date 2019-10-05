@@ -11,14 +11,12 @@ import Combine
 import KingfisherSwiftUI
 import Kingfisher
 
-// MARK: - Movie Cast View
+// MARK: - Movie Credits View
 struct MovieCreditsView: View {
 	
 	@EnvironmentObject var fetcher: Fetcher
 	@State private var credits = [Credit]()
-	
-	let movie: Movie
-	
+		
 	var body: some View {
 		GeometryReader { g in
 				ScrollView(.horizontal, showsIndicators: false) {
@@ -35,9 +33,10 @@ struct MovieCreditsView: View {
 	}
 }
 //fileprivate
-// MARK: - Movie Cast Row
+// MARK: - Movie Credit Row
 extension MovieCreditsView {
-	struct MovieCreditRow: View {
+
+    struct MovieCreditRow: View {
 	
 		@EnvironmentObject var fetcher: Fetcher
 		@State private var selection: Int? = nil
@@ -54,7 +53,7 @@ extension MovieCreditsView {
 		var bottomView: some View {
 			if credit.creditProfilePath != nil {
 				ZStack {
-					KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(credit.creditProfilePath!)!,cacheKey: credit.creditProfilePath)))
+					KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(credit.creditProfilePath)!,cacheKey: credit.creditProfilePath)))
 						.resizable()
 					LinearGradient(gradient: Gradient(colors: [.clear, .black]),
 								   startPoint: .center,
@@ -81,10 +80,11 @@ extension MovieCreditsView {
 				
 				bottomView
 				
-				VStack(alignment: .center) {
+				VStack {
 					
 					Text(verbatim: self.credit.creditName)
-						.font(.system(size: 13)).bold()
+						.bold()
+                        .font(.system(size: 13))
 						.lineLimit(1)
 					
 					if !self.credit.extraInfo.isEmpty {
@@ -95,8 +95,8 @@ extension MovieCreditsView {
 				}
 				.multilineTextAlignment(.center)
 				.foregroundColor(credit.creditProfilePath != nil ? .white : .black)
-				.padding(.horizontal, 5)
-				.padding(.bottom, 5)
+			//	.padding(.horizontal, 5)
+				.padding(5)
 				
 				NavigationLink(destination: PersonView(credit: self.credit).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
 					EmptyView()
@@ -105,7 +105,10 @@ extension MovieCreditsView {
 			.frame(width: proxy.frame(in: .global).size.width * 0.3, height: proxy.frame(in: .global).size.height)
 			.cornerRadius(10)
 			.onTapGesture {
-				self.fetcher.fetchPersonDetails(self.credit)
+                self.fetcher.personMovies.0.removeAll()
+                self.fetcher.personMovies.1.removeAll()
+                self.fetcher.fetchPersonDetails(self.credit)
+                self.fetcher.fetchPersonMovies(self.credit)
 				self.selection = 0
 			}
 		}

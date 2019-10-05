@@ -1,0 +1,92 @@
+//
+//  FilmographyView.swift
+//  TMDBAPI
+//
+//  Created by Ghaff Ett on 04/10/2019.
+//  Copyright © 2019 GhaffMac. All rights reserved.
+//
+
+import SwiftUI
+import KingfisherSwiftUI
+import Kingfisher
+
+struct FilmographyView: View {
+    
+    @EnvironmentObject private var fetcher: Fetcher
+    
+    let credit: Credit
+    let proxy: GeometryProxy
+    
+    @State private var personMovies = [Credit]()
+    
+    init(credit: Credit, proxy: GeometryProxy) {
+        self.credit = credit
+        self.proxy = proxy
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            
+            Text("FILMOGRAPHY").bold()
+            
+            PickerView(selection: self.$fetcher.personMoviesPickerSelection, data: ["As Cast", "As Crew"])
+                .padding(.vertical, 2)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(personMovies, id: \.creditIdentifier) { credit in
+                        FilmographyRowView(credit: credit)
+                            .frame(width: self.proxy.frame(in: .global).size.width * 0.3,
+                                   height: self.proxy.frame(in: .global).size.height * 0.25)
+                    }
+                }
+            }
+            
+        }
+        .frame(maxWidth: .infinity)
+        .onReceive(self.fetcher.$personMoviesPickerSelection) { (selection) in
+            self.personMovies = (selection == 0) ? self.fetcher.personMovies.0 : self.fetcher.personMovies.1
+        }
+        .onAppear {
+            self.personMovies = (self.fetcher.personMoviesPickerSelection == 0) ? self.fetcher.personMovies.0 : self.fetcher.personMovies.1
+        }
+    }
+}
+
+
+struct FilmographyRowView: View {
+    
+    @State private var posterURL: URL!
+    
+    let credit: Credit
+    @ViewBuilder
+    var body: some View {
+        
+          ZStack(alignment: .bottom) {
+            ZStack {
+                KFImage(TMDBAPI.getMoviePosterUrl(credit.creditProfilePath), options: [.cacheOriginalImage])
+                    .resizable()
+                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
+            }
+            
+            VStack {
+                Text("\(credit.extraInfo)")
+                    .bold()
+                    .font(.system(size: 13))
+                    .lineLimit(1)
+                Text("\(credit.creditName)")
+                    .font(.system(size: 12))
+                    .lineLimit(2)
+            }
+            .multilineTextAlignment(.center)
+            .foregroundColor(.white)
+            .padding(5)
+            
+        }
+        .cornerRadius(10)
+        .onTapGesture {
+            debugPrint("Id ----> \(self.credit.ID)")
+        }
+    }
+}
+
