@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Kingfisher
 
 enum Endpoint {
     case popular
@@ -92,6 +93,15 @@ extension TMDBAPI {
         }
         
         return posterUrl
+    }
+    
+    static func imageResource(for path: String?) -> Source? {
+        
+        guard let url = self.getMoviePosterUrl(path) else {
+            return nil
+        }
+        
+        return .network(ImageResource(downloadURL: url, cacheKey: path))
     }
 }
 

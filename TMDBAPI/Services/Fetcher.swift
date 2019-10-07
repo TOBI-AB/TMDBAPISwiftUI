@@ -12,44 +12,41 @@ import Combine
 class Fetcher: ObservableObject {
    
     @Published var movies: [Movie] = []
+    @Published var moviesDetails = [Movie]()
     @Published var movieDetails = Movie.placeholder
     @Published var genres = [Genre]()
     @Published var reviews = [Review]()
-    @Published var images = [MovieImage]()
 	@Published var credits = ([Cast](), [Crew]())
+    @Published var movieCredits = [([Cast](), [Crew]())]
     @Published var creditPickerSelection = 0
     @Published var person = Person.placeholder
     @Published var personMovies = ([PersonMoviesCast](), [PersonMoviesCrew]())
     @Published var personMoviesPickerSelection = 0
+    
+    @Published var isDetailsLoaded = false
 	
     
     var moviesCancellable: AnyCancellable?
     var movieDetailsCancellable: AnyCancellable?
-    var reviewsCancellable: AnyCancellable?
-    var imagesCancellable: AnyCancellable?
-	var creditsCancellable: AnyCancellable?
 	var personSubscriber: AnyCancellable?
     var personMoviesCancellable: AnyCancellable?
+    private var cancellables: Set<AnyCancellable> = []
     
     init() {
         //self.fetchMovies()
     }
 	
 	deinit {
-        debugPrint(#function,#file)
-		moviesCancellable?.cancel()
-		movieDetailsCancellable?.cancel()
-		reviewsCancellable?.cancel()
-		imagesCancellable?.cancel()
-		creditsCancellable?.cancel()
+		/*moviesCancellable?.cancel()
+		movieDetailsCancellable?.cancel()*/
+        
+        cancellables.forEach { $0.cancel() }
 	}
 	
 	func cancel() {
-		moviesCancellable?.cancel()
-		movieDetailsCancellable?.cancel()
-		reviewsCancellable?.cancel()
-		imagesCancellable?.cancel()
-		creditsCancellable?.cancel()
+		/*moviesCancellable?.cancel()
+		movieDetailsCancellable?.cancel()*/
+        cancellables.forEach { $0.cancel() }
 	}
 	
 	func cancelPersonPublisher() {
@@ -61,94 +58,35 @@ class Fetcher: ObservableObject {
 extension Fetcher {
     
 	// MARK: Fetch Movies
-	func fetchMovies(atEndpoint endpoint: Endpoint = .popular) {
+    func fetchMovies(atEndpoint endpoint: Endpoint = .nowPlaying) {
         
         let anyPub: AnyPublisher<RequestResponse, Error> = Webservice.shared.getData(atEndpoint: endpoint)
         
-        moviesCancellable = anyPub
+        _ = anyPub
             .map { $0.results }
             .catch { err -> Just<[Movie]> in
-				debugPrint("Error decoding movies: \(err.localizedDescription)")
+				debugPrint("Error decoding movies: \(err)")
                 return Just([])
             }
         .assign(to: \.movies, on: self)
+        .store(in: &cancellables)
+
     }
     
-	// MARK: Fetch Movie Details
-    func fetchMovieDetails(withId id: Int) {
-        let parameters = ["append_to_response":"videos,images"].compactMapValues { $0.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)}
-        
-        let detailsPublisher: AnyPublisher<Movie, Error> = Webservice.shared.getData(atEndpoint: .details(id), parameters: parameters)
-        
-        movieDetailsCancellable = detailsPublisher
-            .map { $0 }
-            .catch { err -> Just<Movie> in
-                debugPrint("Movie details error --> \(err.localizedDescription)")
-                return Just(Movie.placeholder)
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.movieDetails, on: self)
-        
-    }
-	
-	// MARK: Fetch Movie Credits
-	func fetchMovieCredits(_ movie: Movie) {
-		let creditsPublisher: AnyPublisher<Credits, Error> = Webservice.shared.getData(atEndpoint: .credits(movie.id))
-		
-		creditsCancellable = creditsPublisher
-			.map { ($0.cast, $0.crew) }
-			.catch { err -> Just<([Cast], [Crew])> in
-				debugPrint("Movie credits error -> \(err.localizedDescription)")
-				return Just(([], []))
-			}
-			.receive(on: DispatchQueue.main)
-			.assign(to: \.credits, on: self)
-	}
-    
-	// MARK: Fetch Movie Reviews
-    func fetchMovieReviews(_ movie: Movie) {
-        
-        let reviewsPublisher: AnyPublisher<Reviews, Error> = Webservice.shared.getData(atEndpoint: .reviews(movie.id))
-        
-        reviewsCancellable = reviewsPublisher
-            .map { $0.results }
-            .catch { err -> Just<[Review]> in
-                debugPrint("Movie reviews error --> \(err.localizedDescription)")
-                return Just([])
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.reviews, on: self)
-        
-    }
-    
-	// MARK: Fetch Movie Images
-    func fetchMovieImages(_ movie: Movie) {
-        
-        let imagesPubliser: AnyPublisher<MovieImages, Error> = Webservice.shared.getData(atEndpoint: .images(movie.id))
-        
-        imagesCancellable = imagesPubliser
-            .map { $0.posters }
-            .catch { err -> Just<[MovieImage]> in
-                debugPrint("Movie images error --> \(err)")
-                return Just([])
-            }
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.images, on: self)
-    }
-	
 	// MARK: Fetch Credit Details
 	func fetchPersonDetails(_ person: Credit) {
 				
 		let personPublisher: AnyPublisher<Person, Error> = Webservice.shared.getData(atEndpoint: .person(person.ID))
 		
-		personSubscriber = personPublisher
+		_ = personPublisher
 			.map { $0 }
 			.catch { err -> Just<Person> in
 				debugPrint("Person error --> \(err)")
 				return Just(Person.placeholder)
 		}
 		.receive(on: DispatchQueue.main)
-		.assign(to: \.person, on: self)
+        .assign(to: \.person, on: self)
+        .store(in: &cancellables)
 	}
     
     // MARK: Fetch Person Movies
@@ -156,7 +94,7 @@ extension Fetcher {
 
         let personMoviesPublisher: AnyPublisher<PersonMovies, Error> = Webservice.shared.getData(atEndpoint: .personeMovies(person.ID))
         
-        personMoviesCancellable = personMoviesPublisher
+        _ = personMoviesPublisher
             .map { ($0.cast, $0.crew) }
             .catch { err -> Just<([PersonMoviesCast], [PersonMoviesCrew])> in
                 debugPrint("Person Movie error -> \(err)")
@@ -164,5 +102,32 @@ extension Fetcher {
             }
             .receive(on: DispatchQueue.main)
             .assign(to: \.personMovies, on: self)
+            .store(in: &cancellables)
+    }
+    
+    // MARK: Fetrch Movies Details
+    func fetchMoviesDetails(withIDS ids: [Int]) {
+         let parameters = ["append_to_response":"videos,images,credits,reviews"].compactMapValues {
+            $0.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        }
+        
+        let detailsPublishers = ids.map { id -> AnyPublisher<Movie, Error> in
+            Webservice.shared.getData(atEndpoint: .details(id), parameters: parameters)
+        }
+        
+       _ = Publishers.MergeMany(detailsPublishers)
+            .collect()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { (completion) in
+                switch completion {
+                    case .failure(let err):
+                        debugPrint("Error movies details: \(err)")
+                    case .finished:
+                        self.isDetailsLoaded.toggle()
+                        break
+                }
+            }, receiveValue: { (movies) in
+                self.moviesDetails = movies
+        }).store(in: &cancellables)
     }
 }

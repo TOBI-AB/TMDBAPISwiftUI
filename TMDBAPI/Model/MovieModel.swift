@@ -15,7 +15,7 @@ struct RequestResponse: Codable {
 struct Movie: Codable {
     
     let popularity: Double?
-    let voteCount: Int
+    let voteCount: Int?
     let video: Bool
     let posterPath: String?
     let id: Int
@@ -35,6 +35,8 @@ struct Movie: Codable {
     let releaseDate: String
     let spokenLanguages: [SpokenLanguage]?
     let videos: MovieVideos?
+    let credits: Credits?
+    let reviews: Reviews?
    
     struct MovieVideos: Codable {
         let results: [MovieVideo]
@@ -65,7 +67,10 @@ struct Movie: Codable {
               overview: "",
               releaseDate: "",
               spokenLanguages: nil,
-              videos: nil)
+              videos: nil,
+              credits: nil,
+              reviews: nil
+        )
     }
 
     var languages: String {

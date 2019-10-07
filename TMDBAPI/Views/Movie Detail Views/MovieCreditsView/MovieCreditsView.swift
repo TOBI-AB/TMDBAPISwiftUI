@@ -13,24 +13,20 @@ import Kingfisher
 
 // MARK: - Movie Credits View
 struct MovieCreditsView: View {
-	
-	@EnvironmentObject var fetcher: Fetcher
-	@State private var credits = [Credit]()
 		
-	var body: some View {
-		GeometryReader { g in
-				ScrollView(.horizontal, showsIndicators: false) {
-					HStack {
-						ForEach(self.credits, id:\.creditIdentifier) { credit in
-							MovieCreditRow(credit: credit, proxy: g).environmentObject(self.fetcher)
-						}
-					}
-				}
-				.onReceive(self.fetcher.$creditPickerSelection) { res in
-					self.credits = (res == 0 ) ? self.fetcher.credits.0 : self.fetcher.credits.1
-				}
-		}
-	}
+    let credits: [Credit]
+    
+    var body: some View {
+        GeometryReader { g in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(self.credits, id:\.creditIdentifier) { credit in
+                        MovieCreditRow(credit: credit, proxy: g)
+                    }
+                }
+            }
+        }
+    }
 }
 //fileprivate
 // MARK: - Movie Credit Row
@@ -38,7 +34,7 @@ extension MovieCreditsView {
 
     struct MovieCreditRow: View {
 	
-		@EnvironmentObject var fetcher: Fetcher
+		@ObservedObject var fetcher = Fetcher()
 		@State private var selection: Int? = nil
 		let credit: Credit
 		let proxy: GeometryProxy
@@ -53,9 +49,10 @@ extension MovieCreditsView {
 		var bottomView: some View {
 			if credit.creditProfilePath != nil {
 				ZStack {
-					KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(credit.creditProfilePath)!,cacheKey: credit.creditProfilePath)))
+                    KFImage(source: TMDBAPI.imageResource(for: self.credit.creditProfilePath))
 						.resizable()
-					LinearGradient(gradient: Gradient(colors: [.clear, .black]),
+                    
+                    LinearGradient(gradient: Gradient(colors: [.clear, .black]),
 								   startPoint: .center,
 								   endPoint: .bottom)
 				}
@@ -95,14 +92,13 @@ extension MovieCreditsView {
 				}
 				.multilineTextAlignment(.center)
 				.foregroundColor(credit.creditProfilePath != nil ? .white : .black)
-			//	.padding(.horizontal, 5)
 				.padding(5)
 				
 				NavigationLink(destination: PersonView(credit: self.credit).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
 					EmptyView()
 				}
 			}
-			.frame(width: proxy.frame(in: .global).size.width * 0.3, height: proxy.frame(in: .global).size.height)
+            .frame(width: proxy.frame(in: .global).size.width * 0.3, height: proxy.frame(in: .global).size.height)
 			.cornerRadius(10)
 			.onTapGesture {
                 self.fetcher.personMovies.0.removeAll()

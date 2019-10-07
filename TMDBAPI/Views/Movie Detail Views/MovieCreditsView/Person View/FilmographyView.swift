@@ -25,6 +25,7 @@ struct FilmographyView: View {
     }
     
     var body: some View {
+       
         VStack(alignment: .leading) {
             
             Text("FILMOGRAPHY").bold()
@@ -36,6 +37,7 @@ struct FilmographyView: View {
                 HStack {
                     ForEach(personMovies, id: \.creditIdentifier) { credit in
                         FilmographyRowView(credit: credit)
+                            .environmentObject(self.fetcher)
                             .frame(width: self.proxy.frame(in: .global).size.width * 0.3,
                                    height: self.proxy.frame(in: .global).size.height * 0.25)
                     }
@@ -47,8 +49,8 @@ struct FilmographyView: View {
         .onReceive(self.fetcher.$personMoviesPickerSelection) { (selection) in
             self.personMovies = (selection == 0) ? self.fetcher.personMovies.0 : self.fetcher.personMovies.1
         }
-        .onAppear {
-            self.personMovies = (self.fetcher.personMoviesPickerSelection == 0) ? self.fetcher.personMovies.0 : self.fetcher.personMovies.1
+        .onReceive(self.fetcher.$personMovies) { personMovies in
+            self.personMovies = (self.fetcher.personMoviesPickerSelection == 0) ? personMovies.0 : personMovies.1
         }
     }
 }
@@ -56,9 +58,11 @@ struct FilmographyView: View {
 
 struct FilmographyRowView: View {
     
-    @State private var posterURL: URL!
+    @EnvironmentObject private var fetcher: Fetcher
+    @State private var selection: Int?
     
     let credit: Credit
+    
     @ViewBuilder
     var body: some View {
         
@@ -82,10 +86,20 @@ struct FilmographyRowView: View {
             .foregroundColor(.white)
             .padding(5)
             
+            NavigationLink(destination: MovieDetailsView(movieId: self.credit.ID), tag: 0, selection: self.$selection) {
+                EmptyView()
+            }
+            
         }
         .cornerRadius(10)
         .onTapGesture {
-            debugPrint("Id ----> \(self.credit.ID)")
+            // Clean Movie Details View
+            self.fetcher.movieDetails = Movie.placeholder
+            
+            // Fire Navigation Link
+            self.selection = 0
+            
+            debugPrint("ID ---------------->",self.credit)
         }
     }
 }

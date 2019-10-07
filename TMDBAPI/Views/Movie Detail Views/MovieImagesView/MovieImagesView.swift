@@ -13,8 +13,6 @@ import KingfisherSwiftUI
 struct MovieImagesView: View {
     
     let data: [MovieImage]
-    @State private var selection: Int?
-    @State private var selectedImage = (UIImage(), CGFloat())
     
     var body: some View {
         HStack {
@@ -25,11 +23,11 @@ struct MovieImagesView: View {
     }
     
     struct MovieImageView: View {
+      
         let movieImage: MovieImage
 
         var body: some View {
-            KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(movieImage.filePath)!,
-                                                   cacheKey: movieImage.filePath)))
+            KFImage(source: TMDBAPI.imageResource(for: movieImage.filePath))
                 .resizable()
                 .aspectRatio(CGFloat(movieImage.aspectRatio), contentMode: .fit)
                 .onTapGesture {

@@ -23,11 +23,11 @@ extension Double {
         return num.string(from: NSNumber(value: self))
     }
     
-    var toCurrency: String? {
+    var toCurrency: String {
         let num = NumberFormatter.golbalFormatter
         num.numberStyle = .currency
         num.alwaysShowsDecimalSeparator = true
-        return num.string(from: NSNumber(value: self))
+        return num.string(from: NSNumber(value: self)) ?? ""
     }
 }
 

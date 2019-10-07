@@ -10,96 +10,70 @@ import SwiftUI
 import Kingfisher
 import KingfisherSwiftUI
 
+
+// MARK: - Movies List View
 struct MoviesListView: View {
     
     @ObservedObject var fetcher = Fetcher()
+    @State private var movieDetailsNavigationLink: Int?
     
-    @State private var movies = [Movie]()
-    @State private var moviePoster = ""
+    init() {
+         self.fetcher.fetchMovies()
+    }
     
+    // MARK: Main View
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(movies, id: \.id) { movie in
-					NavigationLink(destination: DetailView(movie: movie)) {
-                        MovieRow(movie: movie)
+        GeometryReader { g in
+            NavigationView {
+                List {
+                    ForEach(self.fetcher.movies, id: \.id) { movie in
+                        NavigationLink(destination: MovieDetailsView(movieId: movie.id).environmentObject(self.fetcher)) {
+                            MovieRow(movie: movie, proxy: g)
+                        }
                     }
                 }
-            }
-            .navigationBarTitle(Text("Movies"))
-        }
-		.onAppear(perform: {
-			self.fetcher.fetchMovies()
-		})
-		.onDisappear {
-			self.fetcher.cancel()
-		}
-        .onReceive(self.fetcher.$movies) { (movies) in
-            DispatchQueue.main.async {
-                self.movies = movies
+                .navigationBarTitle(Text("Movies"))
+                .onReceive(self.fetcher.$movies) { (movies) in
+                    let movieIDS = movies.map { $0.id }
+                    self.fetcher.fetchMoviesDetails(withIDS: movieIDS)
+                }
             }
         }
-		
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-		MoviesListView()
-    }
-}
-
+// MARK: - Movie Row
 struct MovieRow: View {
     
+   // @ObservedObject var fetcher = Fetcher()
+    @State private var imageSize: CGSize = .zero
+    
+  //  @Binding var movieDetailsNavigationLink: Int?
     let movie: Movie
+    let proxy: GeometryProxy
     
-    var posterPath: String {
-        movie.posterPath ?? ""
-    }
-    
-    lazy var source: ImageResource = {
-        ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(posterPath)!, cacheKey: posterPath)
-    }()
-    
-
-    @ViewBuilder
     var body: some View {
 
         HStack(alignment: .top, spacing: 10) {
-
-            if TMDBAPI.getMoviePosterUrl(posterPath) != nil {
-                                            
-              KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(self.posterPath)!,
-                                                     cacheKey: posterPath)),options: [.transition(.fade(0.4))])
+            
+            // MARK: Movie Poster
+            KFImage(source: TMDBAPI.imageResource(for: movie.posterPath), options: [.transition(.fade(0.5))])
                 .resizable()
-                .placeholder {
-                    HStack {
-                        Image(systemName: "arrow.2.circlepath.circle")
-                            .resizable()
-                            .frame(width: 80, height: 80)
-                            .padding(40)
-                    }
-                    .foregroundColor(.gray)
-                    .opacity(0.3)
-                }
-                .frame(width: 80, height: 100)
-                .cornerRadius(8)
-                .shadow(radius: 8)
-            }
+                .aspectRatio(0.7, contentMode: .fit)
+                .frame(width: proxy.frame(in: .global).size.width / 4)
+                .cornerRadius(10)
+                .shadow(radius: 10)
     
+            // MARK: Movie Title
             VStack(alignment: .leading, spacing: 10) {
-                Text(movie.originalTitle)
+                Text(movie.originalTitle)//.frame(maxWidth: .infinity)
                 if movie.originalTitle != movie.title {
                     Text(movie.title)
                 }
             }
             .font(.headline)
-        }.padding(.vertical,8)
-        
-    }
-    
-    
-    var movieImage: some View {
-        KFImage(source: .network(ImageResource(downloadURL: TMDBAPI.getMoviePosterUrl(self.posterPath)!, cacheKey: posterPath)), options: [.transition(.fade(0.4))])
+        }
+        .padding(.vertical,8)
+       
     }
 }
