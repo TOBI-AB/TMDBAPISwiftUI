@@ -16,14 +16,11 @@ struct ReviewsView: View {
         ScrollView {
             VStack {
                 ForEach(self.reviews, id: \.id) { review in
-                    VStack {
-                        ReviewsRow(review: review)
-                    }
+                    ReviewsRow(review: review)
                 }
             }.background(Color.purple)
         }
         .navigationBarTitle(Text("Reviews"), displayMode: .inline)
-        .frame(maxWidth: .infinity)
         
     }
 }
@@ -41,7 +38,6 @@ struct ReviewsRow: View {
             
             Text(verbatim: review.content).background(Color.green)
             .lineLimit(4)
-                .layoutPriority(1)
            // .lineLimit(4)//(isOverviewCollapsed ? 6 : nil)
               //  .animation(.spring())
             

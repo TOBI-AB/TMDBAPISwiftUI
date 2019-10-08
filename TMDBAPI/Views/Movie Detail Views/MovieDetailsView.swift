@@ -308,9 +308,17 @@ extension MovieDetailsView {
         movieDetails.movieImages.count > 4 ? MovieImagesView(data: Array(movieDetails.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(movieDetails.movieImages[0..<movieDetails.movieImages.count]))
     }
     
+    // MARK: Movies Reviews
     var movieReviewsView: some View {
-        movieDetails.reviews!.results.count > 2 ? ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 2))) :
+        movieDetails.reviews!.results.count > 2 ?
+            ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 2))) :
             ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.results.count ]))
+    }
+    
+    struct ReviewView: View {
+        var body: some View {
+            Text("")
+        }
     }
 }
 
