@@ -102,8 +102,11 @@ struct MovieDetailsView: View {
                 
                 // MARK: Movi Reviews
                 if self.movieDetails.reviews != nil {
-                    Section(header: Text("REVIEWS").bold()) {
-                        ReviewsView(reviews: self.movieDetails.reviews!.results)
+                    if !self.movieDetails.reviews!.results.isEmpty {
+                        Section(header: self.ReviewsSectionHeader) {
+                            self.movieReviewsView
+                                .frame(minHeight: g.size.height / 3)
+                        }
                     }
                 }
             }
@@ -306,7 +309,7 @@ extension MovieDetailsView {
     }
     
     var movieReviewsView: some View {
-        movieDetails.reviews!.results.count > 3 ? ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 3))) :
+        movieDetails.reviews!.results.count > 2 ? ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 2))) :
             ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.results.count ]))
     }
 }
@@ -362,15 +365,15 @@ extension MovieDetailsView {
         HStack {
             Text("Reviews").bold()
             Spacer()
-            if self.movieDetails.reviews!.results.count > 3 {
+            if self.movieDetails.reviews!.results.count > 2 {
                 HStack {
                     NavigationLink(destination: ReviewsView(reviews: self.movieDetails.reviews!.results),
-                                   tag: 1,
-                                   selection: self.$imagesNavigationLinkSelection)
+                                   tag: 2,
+                                   selection: self.$reviewsNavigationLinkSelection)
                     {
                             EmptyView()
                     }
-                    Button("See All") { self.reviewsNavigationLinkSelection = 1}
+                    Button("See All") { self.reviewsNavigationLinkSelection = 2 }
                         .foregroundColor(Color(.systemBlue))
                 }
             }

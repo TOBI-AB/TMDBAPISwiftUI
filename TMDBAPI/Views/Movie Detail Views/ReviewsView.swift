@@ -13,19 +13,17 @@ struct ReviewsView: View {
     let reviews: [Review]
     
     var body: some View {
-          //  ScrollView(showsIndicators: false) {
-                VStack {
-                    ForEach(self.reviews, id: \.id) { review in
-                        VStack {
-                            ReviewsRow(review: review)
-                            if self.reviews.indexOfElement(review) < self.reviews.count {
-                                Divider()
-                            }
-                        }
+        ScrollView {
+            VStack {
+                ForEach(self.reviews, id: \.id) { review in
+                    VStack {
+                        ReviewsRow(review: review)
                     }
                 }
-          //  }
-            .navigationBarTitle(Text("Reviews"), displayMode: .large)
+            }.background(Color.purple)
+        }
+        .navigationBarTitle(Text("Reviews"), displayMode: .inline)
+        .frame(maxWidth: .infinity)
         
     }
 }
@@ -39,11 +37,12 @@ struct ReviewsRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(verbatim: review.author.capitalized)
-                .font(.headline)
+                .font(.headline).background(Color.orange)
             
-            Text(verbatim: review.content)
-              //  .layoutPriority(1)
-                .lineLimit(4)//(isOverviewCollapsed ? 6 : nil)
+            Text(verbatim: review.content).background(Color.green)
+            .lineLimit(4)
+                .layoutPriority(1)
+           // .lineLimit(4)//(isOverviewCollapsed ? 6 : nil)
               //  .animation(.spring())
             
             /*HStack {
