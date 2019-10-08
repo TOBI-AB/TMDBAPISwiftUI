@@ -42,12 +42,9 @@ struct MovieDetailsView: View {
             ZStack {
                 KFImage(source: TMDBAPI.imageResource(for: self.movieDetails.posterPath))
                     .resizable()
-             
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
             }
-        
 			self.detailsView
-     
 		}
         .listRowInsets(EdgeInsets.zero)
         .sheet(isPresented: self.$isTrailerPresented) {
@@ -56,6 +53,7 @@ struct MovieDetailsView: View {
         .onAppear {
             if let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId })  {
                 self.movieDetails = movieDetails
+                debugPrint(self.movieDetails.id)
             }
         }
     }
@@ -102,10 +100,9 @@ struct MovieDetailsView: View {
                 
                 // MARK: Movi Reviews
                 if self.movieDetails.reviews != nil {
-                    if !self.movieDetails.reviews!.results.isEmpty {
+                    if self.movieDetails.reviews!.totalResults > 0 {
                         Section(header: self.ReviewsSectionHeader) {
                             self.movieReviewsView
-                                .frame(minHeight: g.size.height / 3)
                         }
                     }
                 }
@@ -308,16 +305,31 @@ extension MovieDetailsView {
         movieDetails.movieImages.count > 4 ? MovieImagesView(data: Array(movieDetails.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(movieDetails.movieImages[0..<movieDetails.movieImages.count]))
     }
     
-    // MARK: Movies Reviews
+    // MARK: Movie Reviews
     var movieReviewsView: some View {
-        movieDetails.reviews!.results.count > 2 ?
-            ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 2))) :
-            ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.results.count ]))
+        movieDetails.reviews!.totalResults > 3 ?
+            ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 3))) :
+            ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.totalResults ]))
     }
     
-    struct ReviewView: View {
+    // MARK: Movies Reviews
+    struct ReviewsView: View {
+        
+        let reviews: [Review]
+        
         var body: some View {
-            Text("")
+            VStack {
+                ForEach(self.reviews, id: \.id) { review in
+                    Group {
+                        ReviewsRow(review: review)
+                        if self.reviews.indexOfElement(review) < self.reviews.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle(Text("Reviews"), displayMode: .inline)
+            
         }
     }
 }
@@ -342,13 +354,6 @@ extension MovieDetailsView {
 // MARK: - Sections Headers
 extension MovieDetailsView {
    
-    var detailsSectionHeader: some View {
-        Text("Details")
-            .bold()
-            .background(Color.white)
-            .frame(maxWidth: .infinity)
-    }
-    
     // MARK: Movie Images Section Header
     var ImagesViewSectionHeader: some View {
         HStack {
@@ -369,13 +374,18 @@ extension MovieDetailsView {
         }
     }
     
+    // MARK: Reviews Section Header
     var ReviewsSectionHeader: some View {
+     
         HStack {
-            Text("Reviews").bold()
+            
+            Text("REVIEWS").bold()
+            
             Spacer()
-            if self.movieDetails.reviews!.results.count > 2 {
+           
+            if self.movieDetails.reviews!.results.count > 3 {
                 HStack {
-                    NavigationLink(destination: ReviewsView(reviews: self.movieDetails.reviews!.results),
+                    NavigationLink(destination: ListReviewView(title: movieDetails.title, reviews: self.movieDetails.reviews!.results),
                                    tag: 2,
                                    selection: self.$reviewsNavigationLinkSelection)
                     {

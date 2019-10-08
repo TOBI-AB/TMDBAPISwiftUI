@@ -10,9 +10,9 @@ import Foundation
 
 struct Reviews: Codable {
     let results: [Review]
-    
+    let totalResults: Int
     static var placeholder: Reviews {
-        .init(results: [])
+        .init(results: [], totalResults: .init())
     }
 }
 
