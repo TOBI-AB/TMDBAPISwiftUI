@@ -15,32 +15,23 @@ struct ReviewsRow: View {
     @State private var isReviewContentViewPresented = false
     
     var body: some View {
+        
         VStack(alignment: .leading, spacing: 10) {
+        
             Text(verbatim: review.author.capitalized)
                 .font(.headline)
             Text(verbatim: review.content)
-                .lineLimit(4)
+                .lineLimit(self.review.content.paragraphs.count == 1 ? nil : 4)
+                .layoutPriority(1)
                 .onTapGesture {
-                    self.isReviewContentViewPresented.toggle()
+                    if self.review.content.paragraphs.count > 1 {
+                        self.isReviewContentViewPresented.toggle()
+                    }
             }
         }.sheet(isPresented: self.$isReviewContentViewPresented) {
-            self.modalView
-        }
-    }
-    
-    
-    fileprivate var modalView: some View {
-        NavigationView {
-            
-            ScrollView(.vertical, showsIndicators: true) {
-            
-                Text(verbatim: self.review.content).padding()
-            
-            }
-            .navigationBarTitle(Text(verbatim: "\(self.review.author.capitalized)"), displayMode: .inline)
-            .navigationBarItems(trailing: Button(action: { self.isReviewContentViewPresented = false }, label: {
-                    Text("Done")
-            }))
+            ContentModalView(title: self.review.author,
+                             content: self.review.content,
+                             isContentViewPresented: self.$isReviewContentViewPresented)
         }
     }
 }

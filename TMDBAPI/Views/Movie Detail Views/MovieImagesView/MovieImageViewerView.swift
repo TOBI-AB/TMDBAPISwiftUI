@@ -19,7 +19,7 @@ struct MovieImageViewerView: View {
             Image(uiImage: selectedImage.0)
             .resizable()
             .aspectRatio(selectedImage.1, contentMode: .fit)
-            .padding(.horizontal, 1)
+            //.padding(.horizontal, 1)
             .navigationBarTitle(Text(""), displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") { self.isPresented.wrappedValue.dismiss() })
         }

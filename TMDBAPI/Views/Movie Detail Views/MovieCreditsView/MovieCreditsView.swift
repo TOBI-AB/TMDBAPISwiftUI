@@ -9,23 +9,23 @@
 import SwiftUI
 import Combine
 import KingfisherSwiftUI
-import Kingfisher
+import class Kingfisher.ImageCache
 
 // MARK: - Movie Credits View
 struct MovieCreditsView: View {
 		
     let credits: [Credit]
-    
+    let proxy: GeometryProxy
+       
     var body: some View {
-        GeometryReader { g in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(self.credits, id:\.creditIdentifier) { credit in
-                        MovieCreditRow(credit: credit, proxy: g)
+                        MovieCreditRow(credit: credit)
+                            .frame(width: self.proxy.size.width / 4, height: (self.proxy.size.width / 4) / 0.7)
                     }
                 }
             }
-        }
     }
 }
 //fileprivate
@@ -36,77 +36,48 @@ extension MovieCreditsView {
 	
 		@ObservedObject var fetcher = Fetcher()
 		@State private var selection: Int? = nil
+        @State private var done = false
+        
 		let credit: Credit
-		let proxy: GeometryProxy
-		
-		init(credit: Credit, proxy: GeometryProxy) {
-			self.credit = credit
-			self.proxy = proxy
-		
-		}
 				
-		@ViewBuilder
-		var bottomView: some View {
-			if credit.creditProfilePath != nil {
-				ZStack {
-                    KFImage(source: TMDBAPI.imageResource(for: self.credit.creditProfilePath))
-						.resizable()
+		var body: some View {
+            ZStack(alignment: .bottom) {
+                ZStack {
+                    KFImage(source: TMDBAPI.imageResource(for: credit.creditProfilePath))
+                        .resizable()
+                        .onSuccess { (r) in
+                            self.done = true
+                    }
+                    .cancelOnDisappear(true)
+                    .opacity(self.done || ImageCache.default.isCached(forKey: credit.creditProfilePath ?? "") ? 1.0 : 0.0)
+                    .animation(.linear(duration: 0.4))
                     
                     LinearGradient(gradient: Gradient(colors: [.clear, .black]),
-								   startPoint: .center,
-								   endPoint: .bottom)
-				}
-				
-			} else {
-				ZStack {
-					Rectangle()
-						.fill(Color(.white))
-					Image(systemName: "person.fill")
-						.foregroundColor(Color(.systemGray).opacity(0.5))
-					
-				}
-				.overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color(.systemGray).opacity(0.5),
-																		 lineWidth: 1,
-																		 antialiased: true))
-			}
-		}
-		
-		var body: some View {
-			
-			ZStack(alignment: .bottom) {
-				
-				bottomView
-				
-				VStack {
-					
-					Text(verbatim: self.credit.creditName)
-						.bold()
+                                   startPoint: .center,
+                                   endPoint: .bottom)
+                }.cornerRadius(10)
+                
+                VStack {
+                    Text(credit.creditName)
+                        .bold()
                         .font(.system(size: 13))
-						.lineLimit(1)
-					
-					if !self.credit.extraInfo.isEmpty {
-						Text(verbatim: self.credit.extraInfo)
-							.font(.system(size: 12))
-							.lineLimit(2)
-					}
-				}
-				.multilineTextAlignment(.center)
-				.foregroundColor(credit.creditProfilePath != nil ? .white : .black)
-				.padding(5)
-				
-				NavigationLink(destination: PersonView(credit: self.credit).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
-					EmptyView()
-				}
-			}
-            .frame(width: proxy.frame(in: .global).size.width * 0.3, height: proxy.frame(in: .global).size.height)
-			.cornerRadius(10)
-			.onTapGesture {
-                self.fetcher.personMovies.0.removeAll()
-                self.fetcher.personMovies.1.removeAll()
-                self.fetcher.fetchPersonDetails(self.credit)
-                self.fetcher.fetchPersonMovies(self.credit)
-				self.selection = 0
-			}
+                        .lineLimit(1)
+                    if !credit.extraInfo.isEmpty {
+                        Text(credit.extraInfo)
+                            .font(.system(size: 12))
+                            .lineLimit(2)
+                    }
+                }.foregroundColor(.white).multilineTextAlignment(.center).padding(5)
+            }
 		}
 	}
 }
+
+
+/*.onTapGesture {
+    self.fetcher.personMovies.0.removeAll()
+    self.fetcher.personMovies.1.removeAll()
+    self.fetcher.fetchPersonDetails(self.credit)
+    self.fetcher.fetchPersonMovies(self.credit)
+    self.selection = 0
+}*/

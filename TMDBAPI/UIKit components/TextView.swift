@@ -12,6 +12,8 @@ struct TextView: UIViewRepresentable {
     
     typealias UIViewType = UITextView
     
+    let text: String
+    
     func makeUIView(context: UIViewRepresentableContext<TextView>) -> UITextView {
         let textView = UITextView(frame: .zero)
         return textView
@@ -19,8 +21,9 @@ struct TextView: UIViewRepresentable {
     
     func updateUIView(_ uiView: UITextView, context: UIViewRepresentableContext<TextView>) {
         
+        uiView.isEditable = false
+        
+        let attributes = detectData(in: self.text)
+        uiView.attributedText = attributes
     }
-    
-    
-    
 }

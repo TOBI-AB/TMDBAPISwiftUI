@@ -76,7 +76,7 @@ struct Movie: Codable {
     var languages: String {
         guard let unwrappedSpoLang = self.spokenLanguages else { return "" }
             
-        let langs = unwrappedSpoLang.filter { !$0.name.isEmpty }.lazy.compactMap { $0.name }.joined(separator: "\n")
+        let langs = unwrappedSpoLang.filter { !$0.name.isEmpty }.compactMap { $0.name }.joined(separator: "\n")
         
         return langs
     }

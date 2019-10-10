@@ -26,7 +26,7 @@ extension Double {
     var toCurrency: String {
         let num = NumberFormatter.golbalFormatter
         num.numberStyle = .currency
-        num.alwaysShowsDecimalSeparator = true
+        num.maximumFractionDigits = 0
         return num.string(from: NSNumber(value: self)) ?? ""
     }
 }

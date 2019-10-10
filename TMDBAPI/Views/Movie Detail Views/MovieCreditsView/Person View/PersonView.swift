@@ -47,7 +47,10 @@ struct PersonView: View {
                         Text("BIOGRAPHY").bold()
                         self.personBiographyView
                             .sheet(isPresented: self.$isPersonBiographyShoudExpanded) {
-                                PersonBiographyModalView(name: self.credit.creditName, biography: self.creditBiography)
+                               // PersonBiographyModalView(name: self.credit.creditName, biography: self.creditBiography)
+                                ContentModalView(title: self.credit.creditName,
+                                                 content: self.creditBiography,
+                                                 isContentViewPresented: self.$isPersonBiographyShoudExpanded)
                         }
                     }
                     
@@ -232,10 +235,8 @@ fileprivate extension PersonView {
         var body: some View {
             NavigationView {
                 ScrollView(.vertical, showsIndicators: true) {
-                    VStack {
                         Text("\(self.biography)")
                             .font(.system(size: 16)).padding()
-                    }
                 }
                 .frame(maxHeight: .infinity)
                 .navigationBarTitle(Text("\(self.name) biography"), displayMode: .inline)

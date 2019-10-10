@@ -38,14 +38,14 @@ struct MovieDetailsView: View {
     
     // MARK: Views
     var topSection: some View {
-        ZStack(alignment: .bottomLeading) {
-            ZStack {
+        ZStack(alignment: .bottom) {
+            ZStack(alignment: .bottom) {
                 KFImage(source: TMDBAPI.imageResource(for: self.movieDetails.posterPath))
                     .resizable()
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
             }
-			self.detailsView
-		}
+            self.detailsView
+        }
         .listRowInsets(EdgeInsets.zero)
         .sheet(isPresented: self.$isTrailerPresented) {
             SafariController(url: self.movieTrailerUrl)
@@ -53,7 +53,6 @@ struct MovieDetailsView: View {
         .onAppear {
             if let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId })  {
                 self.movieDetails = movieDetails
-                debugPrint(self.movieDetails.id)
             }
         }
     }
@@ -76,20 +75,17 @@ struct MovieDetailsView: View {
                 self.extraDetailsView
                 
                 // MARK: Movie Credits View
-                /*if self.movieDetails.credits != nil {
-                    Section(header: Text("CREDITS").bold()) {
-                        VStack {
-                            PickerView(selection: self.$fetcher.creditPickerSelection, data: ["Cast", "Crew"])
-                                .padding(.vertical, 2)
-                            
-                            MovieCreditsView(credits: self.fetcher.creditPickerSelection == 0 ? self.movieDetails.credits!.cast : self.movieDetails.credits!.crew)
-                                .frame(minHeight: g.frame(in: .global).size.height * 0.25)
-                                .onAppear {
-                                    self.fetcher.creditPickerSelection = 0
-                                }
-                        }.padding(.vertical, 5)
+                if self.movieDetails.credits != nil {
+                    Section(header: Text("CREDITS")) {
+                        PickerView(selection: self.$fetcher.creditPickerSelection, data: ["Cast", "Crew"])
+                            .padding(.vertical, 2)
+                        
+                        MovieCreditsView(credits: self.fetcher.creditPickerSelection == 0 ? self.movieDetails.credits!.cast : self.movieDetails.credits!.crew, proxy: g)
+                            .onAppear {
+                                self.fetcher.creditPickerSelection = 0
+                        }
                     }
-                }*/
+                }
                 
                 // MARK: Movie Images View
                 if !self.movieDetails.movieImages.isEmpty {
@@ -132,18 +128,15 @@ extension MovieDetailsView {
     // MARK: Movie Poster
     var detailsView: some View {
         
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             titleView
             
             genresView
             
             HStack {
-              
                 Text(verbatim: movieDetails.releaseDate)
-              
                 if movieDetails.runtime != nil {
-                
-                    Text("•").font(.headline).foregroundColor(Color(.systemYellow))
+                    Text("•").font(.headline)
                     Text(movieDetails.runtime!.toTime)
                 }
             }
@@ -191,6 +184,26 @@ extension MovieDetailsView {
         }
     }
     
+    
+    // MARK: Trailer Button
+    var trailerButton: some View {
+        Button(action: {
+            self.movieTrailerUrl = self.trailerUrl
+            self.isTrailerPresented.toggle()
+        }) {
+            HStack(spacing: 5) {
+                Image(systemName: "play")
+                    .imageScale(.small)
+                Text("TRAILER")
+                    .font(.subheadline)
+            }
+            .foregroundColor(Color.white)
+            .padding(.vertical, 5)
+        }
+        .padding(.horizontal)
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemYellow)))
+    }
+    
     // MARK: Rating View
     var ratingView: some View {
       
@@ -203,9 +216,8 @@ extension MovieDetailsView {
                     .font(.headline)
             }
             
-            Divider()
-         
             if movieDetails.voteCount != nil {
+                Divider()
                 VStack(alignment: .center, spacing: 10) {
                     Text("VOTES")
                         .font(.subheadline)
@@ -216,7 +228,6 @@ extension MovieDetailsView {
             
             if movieDetails.popularity != nil {
                 Divider()
-             
                 VStack(alignment: .center, spacing: 10) {
                     Text("POPULARITY")
                         .font(.subheadline)
@@ -229,75 +240,49 @@ extension MovieDetailsView {
         .padding(.vertical, 5)
     }
     
-    // MARK: Trailer Button
-    var trailerButton: some View {
-        Button(action: { //self.playTrailer()
-            
-            self.movieTrailerUrl = self.trailerUrl
-            self.isTrailerPresented.toggle()
-            
-        }) {
-            HStack(spacing: 5) {
-                Image(systemName: "play")
-                    .imageScale(.small)
-                Text("TRAILER")
-                    .font(.subheadline)
-            }
-            .foregroundColor(Color.white)
-            .padding(.vertical, 5)
-        }
-        .padding(.horizontal)
-        .background(Color.black)
-        .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemYellow)))
-    }
-    
     // MARK: Overview
     var overviewView: some View {
         Text("\(movieDetails.overview)")
-            .padding(.vertical, 10)
+            .padding(.vertical, 5)
             .layoutPriority(1)
+            .frame(maxWidth: .infinity)
     }
     
     // MARK: Extra Details
     @ViewBuilder
     var extraDetailsView: some View {
-        //Group {
-            
-            // MARK: Spoken Language
-			VStack(alignment: .leading) {
-				Text("Spoken Languages:")
-					.bold()
-					.padding(.vertical, 2)
-				
-				Text(movieDetails.languages)
-					
-            }.layoutPriority(1).fixedSize()
+        
+        // MARK: Spoken Language
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Spoken Languages:").bold()
+            Text(movieDetails.languages)
+        }
           
-            // MARK: Budget
-            if movieDetails.budget != nil {
-                Text("Budget:\n").bold() + Text("\(movieDetails.budget!.toCurrency)")
+        // MARK: Budget
+        if movieDetails.budget != nil {
+            Text("Budget: ").bold() + Text("\(movieDetails.budget!.toCurrency)")
+        }
+        
+        // MARK: Revenue
+        if movieDetails.revenue != nil {
+            Text("Revenue: ").bold() + Text("\(movieDetails.revenue!.toCurrency)")
+        }
+        
+        // MARK: Production Companies & Production Countries
+        if !movieDetails.productionCountries.isNilAndEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Production Countries:")
+                    .bold()
+                Text("\(movieDetails.productionCompanies!.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
             }
-            
-            // MARK: Revenue
-            if movieDetails.revenue != nil {
-                Text("Revenue:\n").bold() + Text("\(movieDetails.revenue!.toCurrency)")
+        }
+        
+        if !movieDetails.productionCompanies.isNilAndEmpty {
+            NavigationLink(destination: ProductionCompaniesView(productionCompanies: movieDetails.productionCompanies!)){
+                Text("Production Companies")
+                    .padding(.vertical, 5)
             }
-            
-			// MARK: Production Companies & Production Countries
-            if !movieDetails.productionCountries.isNilAndEmpty {
-                VStack(alignment: .leading) {
-                    Text("Production Countries:").bold().padding(.vertical, 2)
-                    Text("\(movieDetails.productionCompanies!.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
-                }
-            }
-           
-            if !movieDetails.productionCompanies.isNilAndEmpty {
-                NavigationLink(destination: ProductionCompaniesView(productionCompanies: movieDetails.productionCompanies!)){
-                    Text("Production Companies").padding(.vertical, 2)
-                }
-            }
-       // }
+        }
     }
     
     // MARK: Movie Images
@@ -314,9 +299,7 @@ extension MovieDetailsView {
     
     // MARK: Movies Reviews
     struct ReviewsView: View {
-        
         let reviews: [Review]
-        
         var body: some View {
             VStack {
                 ForEach(self.reviews, id: \.id) { review in
@@ -328,8 +311,6 @@ extension MovieDetailsView {
                     }
                 }
             }
-            .navigationBarTitle(Text("Reviews"), displayMode: .inline)
-            
         }
     }
 }
@@ -357,7 +338,7 @@ extension MovieDetailsView {
     // MARK: Movie Images Section Header
     var ImagesViewSectionHeader: some View {
         HStack {
-            Text("IMAGES").bold()
+            Text("IMAGES")//.bold()
             Spacer()
             if self.movieDetails.movieImages.count > 4 {
                 HStack {
@@ -378,9 +359,7 @@ extension MovieDetailsView {
     var ReviewsSectionHeader: some View {
      
         HStack {
-            
-            Text("REVIEWS").bold()
-            
+            Text("REVIEWS")//.bold()
             Spacer()
            
             if self.movieDetails.reviews!.results.count > 3 {
