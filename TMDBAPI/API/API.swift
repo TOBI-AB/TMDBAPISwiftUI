@@ -9,7 +9,9 @@
 import Foundation
 import Kingfisher
 
+
 enum Endpoint {
+   
     case popular
     case upcoming
     case topRated
@@ -23,39 +25,69 @@ enum Endpoint {
     case credits(Int)
     case person(Int)
     case personeMovies(Int)
+    case collection(Int)
+    
+    var stringValue: String {
+        switch self {
+        case .popular:
+            return "Popular"
+        case .upcoming:
+            return "Upcoming"
+        case .topRated:
+            return "Top Rated"
+        case .nowPlaying:
+            return "Now Playing"
+        default:
+            return ""
+        }
+    }
     
     var rawValue: String {
         switch self {
-            case .popular:
-                return "/movie/popular"
-            case .upcoming:
-                return "/movie/upcoming"
-            case .topRated:
-                return "/movie/top_rated"
-            case .nowPlaying:
-                return "/movie/now_playing"
-            case .latest:
-                return "/movie/latest"
-            case .details(let id):
-                return "/movie/\(id)"
-            case .genres:
-                return "/genre/movie/list"
-            case .reviews(let id):
-                return "/movie/\(id)/reviews"
-            case .company(let id):
-                return "/company/\(id)"
-            case .images(let id):
-                return "/movie/\(id)/images"
-            case .credits(let id):
-                return "/movie/\(id)/credits"
-            case .person(let id):
-                return "/person/\(id)"
-            case .personeMovies(let id):
-                return "/person/\(id)/movie_credits"
+        case .popular:
+            return "/movie/popular"
+        case .upcoming:
+            return "/movie/upcoming"
+        case .topRated:
+            return "/movie/top_rated"
+        case .nowPlaying:
+            return "/movie/now_playing"
+        case .latest:
+            return "/movie/latest"
+        case .details(let id):
+            return "/movie/\(id)"
+        case .genres:
+            return "/genre/movie/list"
+        case .reviews(let id):
+            return "/movie/\(id)/reviews"
+        case .company(let id):
+            return "/company/\(id)"
+        case .images(let id):
+            return "/movie/\(id)/images"
+        case .credits(let id):
+            return "/movie/\(id)/credits"
+        case .person(let id):
+            return "/person/\(id)"
+        case .personeMovies(let id):
+            return "/person/\(id)/movie_credits"
+        case .collection(let id):
+            return "/collection/\(id)"
         }
     }
 }
 
+enum ImageType {
+    case backdrop
+    case logo
+    case poster
+    
+    private enum BackdropSize: String {
+        case w300
+        case w780
+        case w1280
+        case original
+    }
+}
 
 struct TMDBAPI {
     static private var key = "40e70758e59746255ad62482f1451c70"
@@ -78,15 +110,15 @@ extension TMDBAPI {
         }
         
         guard let endpointUrl = urlCom?.url else {
-            fatalError("----- Error Url \(endpoint.rawValue) -----")
+            fatalError("Endpoint: \(endpoint.rawValue), bad url: \(String(describing: urlCom?.url))")
         }
         
         return endpointUrl
     }
     
-    static func getMoviePosterUrl(_ posterPath: String?) -> URL? {
-        guard let wrappedPosterPath = posterPath else { return nil }
-        let posterUrlString = "https://image.tmdb.org/t/p/w500".appending(wrappedPosterPath)
+    static func getMoviePosterUrl(_ posterPath: String?, withSize size: String = "w500") -> URL? {
+        guard let unwrappedPosterPath = posterPath else { return nil }
+        let posterUrlString = "https://image.tmdb.org/t/p/\(size)".appending(unwrappedPosterPath)
         
         guard let posterUrl = URL(string: posterUrlString) else {
             return nil
@@ -105,3 +137,30 @@ extension TMDBAPI {
     }
 }
 
+
+/*
+ "backdrop_sizes": [
+            "w300",
+            "w780",
+            "w1280",
+            "original"
+        ],
+        "logo_sizes": [
+            "w45",
+            "w92",
+            "w154",
+            "w185",
+            "w300",
+            "w500",
+            "original"
+        ],
+        "poster_sizes": [
+            "w92",
+            "w154",
+            "w185",
+            "w342",
+            "w500",
+            "w780",
+            "original"
+        ],
+ */

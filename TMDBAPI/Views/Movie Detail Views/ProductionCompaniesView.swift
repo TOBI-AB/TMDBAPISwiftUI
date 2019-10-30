@@ -38,10 +38,12 @@ struct ProductionCompaniesView: View {
 			HStack(alignment: .top) {
 				
 				if company.logoPath != nil {
+                    
+                    KFImage(source: TMDBAPI.imageResource(for: company.logoPath))
 					
-					KFImage(TMDBAPI.getMoviePosterUrl(company.logoPath!)!, options: [.waitForCache, .transition(.fade(1))])
+					/*KFImage(TMDBAPI.getMoviePosterUrl(company.logoPath!)!)//, options: [.waitForCache, .transition(.fade(1))])
 						.resizable()
-						.modifier(CompanyImageModifier())
+						.modifier(CompanyImageModifier())*/
 				}
 				else {
 					ZStack {

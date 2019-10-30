@@ -15,65 +15,91 @@ import KingfisherSwiftUI
 struct MoviesListView: View {
     
     @ObservedObject var fetcher = Fetcher()
-    @State private var movieDetailsNavigationLink: Int?
-    
+    @ObservedObject var movieTypeHandler = MovieTypeHandler.shared
+    @State private var moviesIds = [Int]()
+    @State private var selection: Int?
+    @State private var selectedMovie = Movie.placeholder
+    @State private var movieTypePickerSelection = 0
+
+    private let movieTypes: [Endpoint] = [.nowPlaying, .popular, .topRated, .upcoming]
+        
     init() {
-         self.fetcher.fetchMovies()
+        self.fetcher.fetchMovies(atEndpoint: .nowPlaying)
     }
     
     // MARK: Main View
+    @ViewBuilder
     var body: some View {
-        GeometryReader { g in
-            NavigationView {
-                List {
-                    ForEach(self.fetcher.movies, id: \.id) { movie in
-                        NavigationLink(destination: MovieDetailsView(movieId: movie.id).environmentObject(self.fetcher)) {
-                            MovieRow(movie: movie, proxy: g)
-                        }
+       
+        NavigationView {
+          
+            VStack {
+                NavigationLink(destination: MovieDetailsView(movieId: self.selectedMovie.id).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
+                    EmptyView()
+                }
+                
+                Picker(selection: self.$fetcher.movieType, label: Text("")) {
+                    ForEach(0..<self.movieTypes.map({$0.stringValue}).count) {
+                        Text(self.movieTypes.map({$0.stringValue})[$0])
+                            .tag($0)
                     }
                 }
-                .navigationBarTitle(Text("Movies"))
-                .onReceive(self.fetcher.$movies) { (movies) in
-                    let movieIDS = movies.map { $0.id }
+                .fixedSize(horizontal: false, vertical: true)
+                .pickerStyle(SegmentedPickerStyle())
+                .padding([.horizontal],5)
+                
+                MoviessCollectionView(selectedMovie: self.$selectedMovie, selection: self.$selection)
+                    .environmentObject(self.fetcher)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationBarTitle(Text("Movies"), displayMode: .large)
+            .onReceive(self.fetcher.$movies) { (movies) in
+                
+                let movieIDS = movies.map { $0.id }
+                                
+                DispatchQueue.global(qos: .background).async {
                     self.fetcher.fetchMoviesDetails(withIDS: movieIDS)
                 }
             }
         }
     }
+    
 }
 
 // MARK: - Movie Row
 struct MovieRow: View {
     
-   // @ObservedObject var fetcher = Fetcher()
     @State private var imageSize: CGSize = .zero
     
-  //  @Binding var movieDetailsNavigationLink: Int?
     let movie: Movie
-    let proxy: GeometryProxy
+    let size: CGSize
     
     var body: some View {
-
-        HStack(alignment: .top, spacing: 10) {
+        
+        VStack(spacing: 5) {
             
             // MARK: Movie Poster
-            KFImage(source: TMDBAPI.imageResource(for: movie.posterPath), options: [.transition(.fade(0.5))])
+            KFImage(source: TMDBAPI.imageResource(for: movie.posterPath))//, options: [.transition(.fade(0.5))])
                 .resizable()
+                .renderingMode(.original)
                 .aspectRatio(0.7, contentMode: .fit)
-                .frame(width: proxy.frame(in: .global).size.width / 4)
-                .cornerRadius(10)
-                .shadow(radius: 10)
-    
+                .frame(width: (size.width - 48) / 2)
+                .cornerRadius(5)
+                .shadow(radius: 10).layoutPriority(1)
+            
             // MARK: Movie Title
-            VStack(alignment: .leading, spacing: 10) {
-                Text(movie.originalTitle)//.frame(maxWidth: .infinity)
-                if movie.originalTitle != movie.title {
-                    Text(movie.title)
-                }
-            }
-            .font(.headline)
-        }
-        .padding(.vertical,8)
-       
+            /*VStack(alignment: .leading, spacing: 10) {
+             
+             Text(movie.originalTitle).font(.headline).truncationMode(.tail)//.lineLimit(2)//.frame(maxWidth: .infinity)
+             
+             if movie.originalTitle != movie.title {
+             Text(movie.title) .font(.headline)
+             }
+             
+             //Spacer()
+             }*/
+            
+            
+        }.background(Color.blue.opacity(0.6))
     }
 }

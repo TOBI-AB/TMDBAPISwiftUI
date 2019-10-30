@@ -10,7 +10,7 @@ import SwiftUI
 import KingfisherSwiftUI
 import Kingfisher
 
-struct FilmographyView: View {
+struct PersonMoviesView: View {
     
     @EnvironmentObject private var fetcher: Fetcher
     
@@ -68,7 +68,7 @@ struct FilmographyRowView: View {
         
           ZStack(alignment: .bottom) {
             ZStack {
-                KFImage(TMDBAPI.getMoviePosterUrl(credit.creditProfilePath), options: [.cacheOriginalImage])
+                KFImage(TMDBAPI.getMoviePosterUrl(credit.creditProfilePath))//, options: [.cacheOriginalImage])
                     .resizable()
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
             }
@@ -86,9 +86,9 @@ struct FilmographyRowView: View {
             .foregroundColor(.white)
             .padding(5)
             
-            NavigationLink(destination: MovieDetailsView(movieId: self.credit.ID), tag: 0, selection: self.$selection) {
+          /*  NavigationLink(destination: MovieDetailsView(movieId: self.credit.ID), tag: 0, selection: self.$selection) {
                 EmptyView()
-            }
+            }*/
             
         }
         .cornerRadius(10)

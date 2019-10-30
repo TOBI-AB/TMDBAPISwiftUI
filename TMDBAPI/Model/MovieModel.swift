@@ -12,8 +12,8 @@ struct RequestResponse: Codable {
     var results: [Movie]
 }
 
+
 struct Movie: Codable {
-    
     let popularity: Double?
     let voteCount: Int?
     let video: Bool
@@ -25,6 +25,7 @@ struct Movie: Codable {
     let originalTitle: String
     let title: String
     let genres: [Genre]?
+    let genreIds: [Int]?
     let budget: Double?
     let revenue: Double?
     let productionCompanies: [ProductionCompany]?
@@ -37,6 +38,8 @@ struct Movie: Codable {
     let videos: MovieVideos?
     let credits: Credits?
     let reviews: Reviews?
+    let belongsToCollection: MovieCollection?
+    
    
     struct MovieVideos: Codable {
         let results: [MovieVideo]
@@ -58,6 +61,7 @@ struct Movie: Codable {
               originalTitle:"",
               title: "",
               genres: nil,
+              genreIds: nil,
               budget: nil,
               revenue: nil,
               productionCompanies: nil,
@@ -69,7 +73,8 @@ struct Movie: Codable {
               spokenLanguages: nil,
               videos: nil,
               credits: nil,
-              reviews: nil
+              reviews: nil,
+              belongsToCollection: nil
         )
     }
 
@@ -98,6 +103,18 @@ struct Movie: Codable {
     var movieImages: [MovieImage] {
         guard let unwrappedImages = self.images else { return [] }
         return unwrappedImages.posters
+    }
+}
+
+extension Movie: Equatable {
+    static func ==(lhs: Movie, rhs: Movie) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
+extension Movie: Hashable {
+    func hash(into hasher: inout Hasher) {
+        
     }
 }
 
@@ -149,3 +166,12 @@ struct ProductionCountry: Codable {
     let name: String
 }
 
+struct MovieCollection: Codable {
+    let id: Int
+    let name: String
+    let posterPath: String?
+    
+    var _name: String {
+        return (self.name.hasPrefix("the") || self.name.hasPrefix("The")) ? name : "the \(self.name)"
+    }
+}

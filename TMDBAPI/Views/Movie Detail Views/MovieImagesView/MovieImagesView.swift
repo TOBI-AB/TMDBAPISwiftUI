@@ -33,7 +33,7 @@ struct MovieImagesView: View {
                 .onTapGesture {
                     ImageCache.default.notifyImageSelection(for: self.movieImage,
                                                             notificationName: .imagesSectionDidSelectedImage)
-			}.cornerRadius(10)
+			}.cornerRadius(5)
         }
     }
 }

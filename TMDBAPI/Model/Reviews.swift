@@ -19,7 +19,7 @@ struct Reviews: Codable {
 struct Review: Codable {
     let id: String
     let author: String
-    let content: String
+    var content: String
     let url: String
 }
 

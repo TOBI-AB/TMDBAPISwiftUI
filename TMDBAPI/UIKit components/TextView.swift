@@ -16,6 +16,8 @@ struct TextView: UIViewRepresentable {
     
     func makeUIView(context: UIViewRepresentableContext<TextView>) -> UITextView {
         let textView = UITextView(frame: .zero)
+        textView.backgroundColor = .systemBackground
+        
         return textView
     }
     
@@ -23,7 +25,15 @@ struct TextView: UIViewRepresentable {
         
         uiView.isEditable = false
         
-        let attributes = detectData(in: self.text)
+        guard let attributes = self.text.attributes().mutableCopy() as? NSMutableAttributedString else {
+            return
+        }
+        
+        let range = NSRange(location: 0, length: self.text.utf16.count)
+        
+        attributes.addAttributes([NSAttributedString.Key.font : UIFont.systemFont(ofSize: 16)], range: range)
+        attributes.addAttributes([NSAttributedString.Key.foregroundColor : UIColor.label], range: range)
+        
         uiView.attributedText = attributes
     }
 }

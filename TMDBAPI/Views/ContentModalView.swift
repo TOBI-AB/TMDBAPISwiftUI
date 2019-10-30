@@ -16,13 +16,9 @@ struct ContentModalView: View {
     
     var body: some View {
         NavigationView {
-            /*ScrollView(.vertical, showsIndicators: true) {
-                Text(verbatim: self.content)
-                    .padding()
-            }*/
             TextView(text: self.content)
                 .padding()
-                .navigationBarTitle(Text(verbatim: "\(self.title.capitalized)"), displayMode: .inline)
+                .navigationBarTitle(Text(verbatim: "\(self.title)"), displayMode: .inline)
                 .navigationBarItems(trailing:
                     Button(action: { self.isContentViewPresented = false }, label: {
                         Text("Done")

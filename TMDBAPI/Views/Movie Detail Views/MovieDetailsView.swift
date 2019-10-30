@@ -1,6 +1,6 @@
 //
 //  DetailView.swift
-//  TMDBAPI
+//  elf.fetcher.moviesDetails.first
 //
 //  Created by Ghaff Ett on 29/08/2019.
 //  Copyright © 2019 GhaffMac. All rights reserved.
@@ -26,130 +26,131 @@ struct MovieDetailsView: View {
     
     @State private var movieTrailerUrl = ""
     @State private var isTrailerPresented = false
+    @State private var isOverviewExpanded = false
     
     @State private var creditPickerSelection: Int?
     @State private var reviewsNavigationLinkSelection: Int?
     
     let movieId: Int
     
-    init(movieId: Int = .init()) {
+    init(movieId: Int) {
         self.movieId = movieId
     }
     
-    // MARK: Views
-    var topSection: some View {
-        ZStack(alignment: .bottom) {
-            ZStack(alignment: .bottom) {
-                KFImage(source: TMDBAPI.imageResource(for: self.movieDetails.posterPath))
-                    .resizable()
-                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
-            }
-            self.detailsView
-        }
-        .listRowInsets(EdgeInsets.zero)
-        .sheet(isPresented: self.$isTrailerPresented) {
-            SafariController(url: self.movieTrailerUrl)
-        }
-        .onAppear {
-            if let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId })  {
-                self.movieDetails = movieDetails
-            }
-        }
-    }
-    
+    @ViewBuilder
     var body: some View {
-        GeometryReader { g in
+        
+        GeometryReader {g in
             List {
                 
-                // MARK: Top Section: Poster & Details View(Title, Year, Genres, Runtime & Trailer)
-                self.topSection
-                    .frame(height: g.frame(in: .global).size.height * 0.7)
+                // MARK: Top Section
+                self.topSection.frame(height: g.size.height * 0.7)
                 
-                // MARK: Rating
+                // MARK: Rating View
                 self.ratingView
                 
                 // MARK: Overview
                 self.overviewView
                 
-                // MARK: Extra Details
-                self.extraDetailsView
-                
-                // MARK: Movie Credits View
-                if self.movieDetails.credits != nil {
-                    Section(header: Text("CREDITS")) {
+                // MARK: Cast & Crew
+                VStack {
+                    if self.movieDetails.credits != nil {
                         PickerView(selection: self.$fetcher.creditPickerSelection, data: ["Cast", "Crew"])
                             .padding(.vertical, 2)
                         
-                        MovieCreditsView(credits: self.fetcher.creditPickerSelection == 0 ? self.movieDetails.credits!.cast : self.movieDetails.credits!.crew, proxy: g)
-                            .onAppear {
-                                self.fetcher.creditPickerSelection = 0
-                        }
+                        MovieCreditsView(credits: self.fetcher.creditPickerSelection == 0 ? self.movieDetails.credits!.cast : self.movieDetails.credits!.crew)
+                    } else {
+                        EmptyView()
                     }
                 }
-                
-                // MARK: Movie Images View
-                if !self.movieDetails.movieImages.isEmpty {
-                    Section(header: self.ImagesViewSectionHeader) {
+
+                // MARK: Images
+                VStack(spacing: 8) {
+                    if !self.movieDetails.movieImages.isEmpty {
+                        self.ImagesViewSectionHeader
                         self.movieImagesView
                     }
                 }
                 
-                // MARK: Movi Reviews
-                if self.movieDetails.reviews != nil {
-                    if self.movieDetails.reviews!.totalResults > 0 {
-                        Section(header: self.ReviewsSectionHeader) {
+                // MARK: Extra Details
+                if self.movieDetails != Movie.placeholder {
+                    self.extraDetailsView
+                }
+                
+                // MARK: Reviews
+                VStack(spacing: 8) {
+                    if self.movieDetails.reviews != nil {
+                        if self.movieDetails.reviews!.totalResults > 0 {
+                            
+                            self.ReviewsSectionHeader
                             self.movieReviewsView
                         }
                     }
                 }
             }
+            .navigationBarTitle(Text(verbatim: self.movieDetails.title), displayMode: .inline)
         }
-        .navigationBarTitle(Text(verbatim: self.movieDetails.title), displayMode: .inline)
-        .opacity(self.fetcher.isDetailsLoaded ? 1 : 0)
-        .onReceive(NotificationCenter.default.publisher(for: .imagesSectionDidSelectedImage)) { imageInfos in
+        .onReceive(self.fetcher.$isDetailsLoaded) { (loaded) in
             
-            guard let notificationObject = imageInfos.object as? (UIImage, CGFloat) else { return }
-            
-            self.selectedImage = notificationObject
-            self.isImageViewerPresented = true
-            self.imagesNavigationLinkSelection = 2
+            if !self.fetcher.moviesDetails.isEmpty {
+                if let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId }) {
+                    self.movieDetails = movieDetails
+                } else {
+                    debugPrint("New movie ---> \(self.movieId)")
+                    //self.fetcher.fetchMoviesDetails(withIDS: [self.movieId])
+                }
+            } else {
+                return
+            }
         }
-        .sheet(isPresented: self.$isImageViewerPresented) {
-            MovieImageViewerView(selectedImage: self.selectedImage)
-        }
-        
-    }	
+    }
 }
 
 
-// MARK: - Rows Views
+// MARK: Rows Views
 extension MovieDetailsView {
     
-    // MARK: Movie Poster
-    var detailsView: some View {
-        
-        VStack(alignment: .leading, spacing: 10) {
-            titleView
-            
-            genresView
-            
-            HStack {
-                Text(verbatim: movieDetails.releaseDate)
-                if movieDetails.runtime != nil {
-                    Text("•").font(.headline)
-                    Text(movieDetails.runtime!.toTime)
-                }
-            }
-            .foregroundColor(.white)
-                        
-            if !movieDetails._videos.isEmpty {
-                trailerButton
-            }
+    // MARK: - Top Section
+    var topSection: some View {
        
-        }.padding()
+        ZStack(alignment: .bottom) {
+          
+            // Poster
+            ZStack(alignment: .bottom) {
+                KFImage(source: TMDBAPI.imageResource(for: self.movieDetails.posterPath))
+                    .resizable()
+                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
+            }
+            
+            // Details: Title, genres, runtime, trailer
+            VStack(alignment: .leading, spacing: 10) {
+                 titleView
+                 
+                 genresView
+                 
+                 HStack {
+                     Text(verbatim: movieDetails.releaseDate)
+                     if movieDetails.runtime != nil {
+                         Text("•").font(.headline)
+                         Text(movieDetails.runtime!.toTime)
+                     }
+                 }
+                 .foregroundColor(.white)
+                             
+                 if !movieDetails._videos.isEmpty {
+                     trailerButton
+                 }
+            
+             }.padding()
+        }
+        .listRowInsets(EdgeInsets.zero)
+        .sheet(isPresented: self.$isTrailerPresented) {
+            SafariController(url: self.movieTrailerUrl)
+        }
     }
     
-    // MARK: Title View
+    
+    // Title View
     var titleView: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(movieDetails.originalTitle.uppercased())
@@ -164,7 +165,7 @@ extension MovieDetailsView {
         }
     }
     
-    // MARK: Genres View
+    // Genres View
     @ViewBuilder
     var genresView: some View {
         if !movieDetails.genres.isNilAndEmpty {
@@ -184,8 +185,7 @@ extension MovieDetailsView {
         }
     }
     
-    
-    // MARK: Trailer Button
+    // Trailer Button
     var trailerButton: some View {
         Button(action: {
             self.movieTrailerUrl = self.trailerUrl
@@ -207,14 +207,14 @@ extension MovieDetailsView {
     // MARK: Rating View
     var ratingView: some View {
       
-        HStack(spacing: 40) {
+        HStack {
         
             VStack(alignment: .center, spacing: 10) {
                 Text("RATING")
                     .font(.subheadline)
                 Text(verbatim: "\(movieDetails.voteAverage)")
                     .font(.headline)
-            }
+            }.padding(.horizontal)
             
             if movieDetails.voteCount != nil {
                 Divider()
@@ -223,7 +223,7 @@ extension MovieDetailsView {
                         .font(.subheadline)
                     Text(verbatim: "\(movieDetails.voteCount!)")
                         .font(.headline)
-                }
+                }.padding(.horizontal)
             }
             
             if movieDetails.popularity != nil {
@@ -233,78 +233,91 @@ extension MovieDetailsView {
                         .font(.subheadline)
                     Text(verbatim: "\(movieDetails.popularity!)")
                         .font(.headline)
-                }
+                }.padding(.horizontal)
             }
         }
         .frame(maxWidth:.infinity)
         .padding(.vertical, 5)
     }
     
-    // MARK: Overview
+    // MARK: - Overview
     var overviewView: some View {
         Text("\(movieDetails.overview)")
-            .padding(.vertical, 5)
-            .layoutPriority(1)
+            .font(.body)
             .frame(maxWidth: .infinity)
+            .layoutPriority(1)
+            
     }
     
-    // MARK: Extra Details
+    // MARK: - Extra Details
     @ViewBuilder
     var extraDetailsView: some View {
         
+        // MARK: Collection
+        if movieDetails.belongsToCollection != nil {
+            NavigationLink(destination: MovieCollectionView(collection: movieDetails.belongsToCollection!)) {
+                Text("Belongs to ") + Text("\(movieDetails.belongsToCollection!._name)").bold()
+            }
+        }
+        
         // MARK: Spoken Language
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("Spoken Languages:").bold()
             Text(movieDetails.languages)
+               // .font(.system(size: 15))
+            
         }
-          
         // MARK: Budget
         if movieDetails.budget != nil {
             Text("Budget: ").bold() + Text("\(movieDetails.budget!.toCurrency)")
         }
-        
+                
         // MARK: Revenue
         if movieDetails.revenue != nil {
             Text("Revenue: ").bold() + Text("\(movieDetails.revenue!.toCurrency)")
         }
         
-        // MARK: Production Companies & Production Countries
+        // MARK: Production Countries
         if !movieDetails.productionCountries.isNilAndEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text("Production Countries:")
                     .bold()
-                Text("\(movieDetails.productionCompanies!.compactMap {$0.name}.joined(separator: "\n"))").layoutPriority(1)
+                Text("\(movieDetails.productionCountries!.compactMap {$0.name}.joined(separator: "\n"))")
+                    .layoutPriority(1)
             }
         }
         
+        // MARK: Production Companies
         if !movieDetails.productionCompanies.isNilAndEmpty {
             NavigationLink(destination: ProductionCompaniesView(productionCompanies: movieDetails.productionCompanies!)){
                 Text("Production Companies")
+                   // .font(.system(size: 15))
                     .padding(.vertical, 5)
             }
         }
     }
     
-    // MARK: Movie Images
+    // MARK: - Movie Images
     var movieImagesView: some View {
         movieDetails.movieImages.count > 4 ? MovieImagesView(data: Array(movieDetails.movieImages.prefix(upTo: 4))) : MovieImagesView(data: Array(movieDetails.movieImages[0..<movieDetails.movieImages.count]))
     }
     
-    // MARK: Movie Reviews
+    // MARK: - Movie Reviews
     var movieReviewsView: some View {
-        movieDetails.reviews!.totalResults > 3 ?
-            ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 3))) :
-            ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.totalResults ]))
+        movieDetails.reviews!.totalResults > 2 ?
+            ReviewsView(reviews: Array(movieDetails.reviews!.results.prefix(upTo: 2))) :
+            ReviewsView(reviews: Array(movieDetails.reviews!.results[0..<movieDetails.reviews!.totalResults]))
     }
     
-    // MARK: Movies Reviews
-    struct ReviewsView: View {
+    // MARK: Reviews Rows
+    fileprivate struct ReviewsView: View {
         let reviews: [Review]
         var body: some View {
-            VStack {
+            VStack(spacing: 5) {
                 ForEach(self.reviews, id: \.id) { review in
                     Group {
                         ReviewsRow(review: review)
+                        
                         if self.reviews.indexOfElement(review) < self.reviews.count - 1 {
                             Divider()
                         }
@@ -338,7 +351,7 @@ extension MovieDetailsView {
     // MARK: Movie Images Section Header
     var ImagesViewSectionHeader: some View {
         HStack {
-            Text("IMAGES")//.bold()
+            Text("IMAGES").bold()
             Spacer()
             if self.movieDetails.movieImages.count > 4 {
                 HStack {
@@ -351,6 +364,8 @@ extension MovieDetailsView {
                     Button("See All") { self.imagesNavigationLinkSelection = 1}
                         .foregroundColor(Color(.systemBlue))
                 }
+            } else {
+                EmptyView()
             }
         }
     }
@@ -359,10 +374,10 @@ extension MovieDetailsView {
     var ReviewsSectionHeader: some View {
      
         HStack {
-            Text("REVIEWS")//.bold()
+            Text("REVIEWS").bold()
             Spacer()
            
-            if self.movieDetails.reviews!.results.count > 3 {
+            if self.movieDetails.reviews!.totalResults > 3 {
                 HStack {
                     NavigationLink(destination: ListReviewView(title: movieDetails.title, reviews: self.movieDetails.reviews!.results),
                                    tag: 2,
@@ -373,7 +388,9 @@ extension MovieDetailsView {
                     Button("See All") { self.reviewsNavigationLinkSelection = 2 }
                         .foregroundColor(Color(.systemBlue))
                 }
-            }
+            } else {
+                EmptyView()
+        }
         }
     }
 }

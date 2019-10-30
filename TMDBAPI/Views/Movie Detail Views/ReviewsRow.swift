@@ -13,22 +13,27 @@ struct ReviewsRow: View {
     let review: Review
     
     @State private var isReviewContentViewPresented = false
+    @State private var reviewSentencesCount: Int?
     
     var body: some View {
-        
-        VStack(alignment: .leading, spacing: 10) {
-        
-            Text(verbatim: review.author.capitalized)
+        VStack(alignment: .leading, spacing: 5) {
+            
+            Text(self.review.author.capitalized)
                 .font(.headline)
-            Text(verbatim: review.content)
-                .lineLimit(self.review.content.paragraphs.count == 1 ? nil : 4)
-                .layoutPriority(1)
-                .onTapGesture {
-                    if self.review.content.paragraphs.count > 1 {
-                        self.isReviewContentViewPresented.toggle()
-                    }
+            
+            Text(self.review.content.trimmingCharacters(in: .init(["*","_"])))
+                .frame(maxWidth: .infinity)
+                .lineLimit(reviewSentencesCount)
             }
-        }.sheet(isPresented: self.$isReviewContentViewPresented) {
+        .padding(5)
+        .cornerRadius(8)
+        .onAppear {
+            self.reviewSentencesCount = (self.review.content.sentences.count <= 6) ? nil : 4
+        }
+        .onTapGesture {
+            self.isReviewContentViewPresented.toggle() //(self.review.content.sentences.count <= 6) ? false : true
+        }
+        .sheet(isPresented: self.$isReviewContentViewPresented) {
             ContentModalView(title: self.review.author,
                              content: self.review.content,
                              isContentViewPresented: self.$isReviewContentViewPresented)

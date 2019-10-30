@@ -13,19 +13,24 @@ import class Kingfisher.ImageCache
 
 // MARK: - Movie Credits View
 struct MovieCreditsView: View {
-		
+	        
     let credits: [Credit]
-    let proxy: GeometryProxy
-       
+    //let proxy: GeometryProxy
+    
+    @State private var fetcher = Fetcher()
+    @State private var person = Person.placeholder
+    @State private var selection: Int?
+    
+
     var body: some View {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(self.credits, id:\.creditIdentifier) { credit in
-                        MovieCreditRow(credit: credit)
-                            .frame(width: self.proxy.size.width / 4, height: (self.proxy.size.width / 4) / 0.7)
-                    }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(self.credits, id:\.creditIdentifier) { credit in
+                    MovieCreditRow(credit: credit).environmentObject(self.fetcher)
+                        .frame(width: UIScreen.width / 4, height: (UIScreen.width / 4) / 0.7)
                 }
-            }
+            }//.padding(.horizontal)
+        }//.padding(.horizontal, -10)
     }
 }
 //fileprivate
@@ -34,14 +39,17 @@ extension MovieCreditsView {
 
     struct MovieCreditRow: View {
 	
-		@ObservedObject var fetcher = Fetcher()
-		@State private var selection: Int? = nil
+        @State var selection: Int?
         @State private var done = false
+                
+        let credit: Credit
         
-		let credit: Credit
-				
-		var body: some View {
+        var body: some View {
             ZStack(alignment: .bottom) {
+                NavigationLink(destination: PersonView(credit: self.credit), tag: 0, selection: self.$selection) {
+                    EmptyView()
+                }
+                                              
                 ZStack {
                     KFImage(source: TMDBAPI.imageResource(for: credit.creditProfilePath))
                         .resizable()
@@ -67,9 +75,14 @@ extension MovieCreditsView {
                             .font(.system(size: 12))
                             .lineLimit(2)
                     }
-                }.foregroundColor(.white).multilineTextAlignment(.center).padding(5)
+                }
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center).padding(5)
             }
-		}
+            .onTapGesture {
+                self.selection = 0
+            }
+        }
 	}
 }
 

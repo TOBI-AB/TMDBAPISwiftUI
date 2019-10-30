@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import Kingfisher
+import class Kingfisher.ImageCache
 import KingfisherSwiftUI
 
 // MARK: - PersonView
@@ -15,24 +15,77 @@ struct PersonView: View {
     
     // MARK: Properties
     @EnvironmentObject var fetcher: Fetcher
-    @State private var person = Person.placeholder
-    @State private var creditImage = UIImage()
+  
+    @State var person = Person.placeholder
+    @State var isTextBiographyExpanded = false
+    
     @State private var isPersonDetailsLoaded = false
-    @State private var creditBiography = ""
-    @State private var isPersonBiographyShoudExpanded = false
-    @State private var homepageUrl = ""
-    @State private var isHomepagePresented = false
-    @State private var isIMDBPresented = false
-    @State private var imdbpageUrl = ""
-    
-    
+    @State private var done = false
+   
     let credit: Credit
+    
     
     // MARK: Main View
     @ViewBuilder
     var body: some View {
+       // ZStack {
+            VStack {
+                KFImage(source: TMDBAPI.imageResource(for: person.profilePath))
+                    .resizable()
+                    .onSuccess(perform: { (res) in
+                        self.done = true
+                    })
+                    .aspectRatio(0.7, contentMode: .fit)
+                    .frame(width: UIScreen.width / 3)
+                    .padding(.top)
+                    .opacity(self.done || ImageCache.default.isCached(forKey: person.profilePath ?? "") ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.4))
+                
+                Text(verbatim: "\(self.person.name)")
+                    .bold()
+                if !self.person.biography.isNilAndEmpty {
+                    
+                    Text("\(self.person.biography!)")
+                        .font(.system(size: 15))
+                        .padding()
+                        .lineLimit(self.person.biography!.sentences.count <= 6 ? nil : 6)
+                        .onTapGesture {
+                            self.isTextBiographyExpanded = (self.person.biography!.sentences.count <= 6) ? false : true
+                        }
+                }
+                
+                Spacer()
+           
+            }
+            .opacity(isPersonDetailsLoaded ? 1.0 : 0.0)
+            .sheet(isPresented: self.$isTextBiographyExpanded) {
+                ContentModalView(title: "\(self.credit.creditName) biography",
+                    content: self.person.biography!,
+                    isContentViewPresented: self.$isTextBiographyExpanded)
+            }
+    //    }
+            
+        .onAppear {
+            self.isPersonDetailsLoaded = false
+            self.fetcher.fetchCreditDetails(self.credit)
+        }
+        .onDisappear {
+            debugPrint("onDisappear")
+            self.isPersonDetailsLoaded = false
+        }
+       
+        .onReceive(self.fetcher.$person) { (person) in
+            if person != Person.placeholder && person.name == self.credit.creditName {
+                self.person = person
+                self.isPersonDetailsLoaded = true
+            } else {
+                self.isPersonDetailsLoaded = false
+            }
+        }
+        
+    }
     
-        GeometryReader { g in
+        /*GeometryReader { g in
             ScrollView(.vertical, showsIndicators: true){
                 
                 VStack(spacing: 5) {
@@ -57,7 +110,7 @@ struct PersonView: View {
                     Divider()
                     
                   //  if !self.fetcher.personMovies.0.isEmpty || !self.fetcher.personMovies.1.isEmpty {
-                        FilmographyView(credit: self.credit, proxy: g)
+                        PersonMoviesView(credit: self.credit, proxy: g)
                             .environmentObject(self.fetcher)
                         
                    // }
@@ -68,30 +121,35 @@ struct PersonView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .opacity(self.isPersonDetailsLoaded ? 1 : 0)
+      //  .opacity(self.isPersonDetailsLoaded ? 1 : 0)
         .onAppear {
             self.fetchCreditImage()
             
         }
         .onReceive(self.fetcher.$person) { (person) in
+            
+            //debugPrint("Person -------> \(person)")
+            
             if person.name == self.credit.creditName {
                 self.person = person
                 self.isPersonDetailsLoaded.toggle()
                 debugPrint("person id: \(person.id)")
+            } else {
+                debugPrint(self.credit.creditName, person.name)
             }
         }
         .navigationBarTitle(self.credit.creditName)
         .sheet(isPresented: self.$isIMDBPresented) {
             SafariController(url: self.imdbpageUrl)
         }
-    }
+    }*/
 }
 
 // MARK: - Views
 fileprivate extension PersonView {
     
     // MARK: Person Image
-    @ViewBuilder
+   /* @ViewBuilder
     var personImageView: some View {
         if self.creditImage != UIImage() {
             Image(uiImage: self.creditImage)
@@ -245,11 +303,28 @@ fileprivate extension PersonView {
                 }, label: { Text("Done") } ))
             }
         }
-    }
+    }*/
 }
 
 // MARK: - Helpers
-fileprivate extension PersonView {
+/*fileprivate extension PersonView {
+ 
+ 
+    @State private var creditImage = UIImage()
+    
+    @State private var isPersonDetailsLoaded = false
+    
+    @State private var creditBiography = ""
+    
+    @State private var isPersonBiographyShoudExpanded = false
+    
+    @State private var homepageUrl = ""
+    
+    @State private var isHomepagePresented = false
+    
+    @State private var isIMDBPresented = false
+    
+    @State private var imdbpageUrl = ""
  
     func fetchCreditImage() {
         if let imagePath = self.credit.creditProfilePath {
@@ -266,3 +341,4 @@ fileprivate extension PersonView {
         }
     }
 }
+*/

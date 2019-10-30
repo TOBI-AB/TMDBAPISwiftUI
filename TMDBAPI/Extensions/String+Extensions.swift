@@ -10,6 +10,13 @@ import SwiftUI
 
 extension String {
     
+    var toDate: Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-mm-dd"
+        
+        return formatter.date(from: self) ?? Date()
+    }
+    
     var length: Int {
         NSRange(location: 0, length: self.utf16.count).length
     }
@@ -18,27 +25,31 @@ extension String {
         self.split(separator: ",").count
     }
     
+    // MARK: Get the country name from string
     var toCountryName: String {
         let countryName = NSLocale.current.localizedString(forRegionCode: self) ?? ""
         
         return countryName
     }
-	
+    
+	// MARK: Get the sentences count
 	var sentences: [String] {
         stringArrayWithUnit(.sentence)
 		
 	}
-	
+    
+	// MARK: Get the paragraphs count
 	var paragraphs: [String] {
         stringArrayWithUnit(.paragraph)
 	}
     
+    // MARK: Get the words count
     var words: [String] {
         stringArrayWithUnit(.word)
     }
 
     
-    
+    // MARK: Split string according to linguistic tagger
     fileprivate func stringArrayWithUnit(_ unit: NSLinguisticTaggerUnit) -> [String] {
         var strArray = [String]()
         let tagger = NSLinguisticTagger(tagSchemes: [.tokenType, .language, .lexicalClass, .nameType, .lemma], options: 0)
@@ -55,44 +66,29 @@ extension String {
         
         return strArray
     }
-
-}
-
-func detectData(in str: String) -> NSAttributedString {
-    
-    let attributesString = NSMutableAttributedString(string: str)
-    
-    let types: NSTextCheckingResult.CheckingType = [.date, .link]
-    
-    let dataDetector = try? NSDataDetector(types: types.rawValue)
     
     
-    /*dataDetector?.enumerated().forEach({ (offset, result) in
-        if result.resultType.contains(.link) {
-            debugPrint(offset, result, result.range)
-            attributesString.addAttributes([NSAttributedString.Key.backgroundColor : UIColor.red], range: result.range)
-        }
-    })*/
-    
-   // var attributesString = NSMutableAttributedString()
-    
-    dataDetector?.enumerateMatches(in: str, options: [], range: NSRange(location: 0, length: str.utf16.count), using: { (match, flags, _) in
+    // MARK: Get attributes for the given string
+    func attributes() -> NSAttributedString {
+      
+        let attributesString = NSMutableAttributedString(string: self)
+        let types: NSTextCheckingResult.CheckingType = [.date, .link]
         
-        guard let unwrappedMatch = match else { return }
+        guard let dataDetector = try? NSDataDetector(types: types.rawValue) else { return attributesString }
         
-        let matchString = (str as NSString).substring(with: unwrappedMatch.range)
-     //   let _attributesString = NSMutableAttributedString(attributedString: .init(string: matchString))
-        
-        
-        switch unwrappedMatch.resultType {
-        case .link:
+        dataDetector.enumerateMatches(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count), using: { (match, flags, _) in
             
-            attributesString.addAttribute(NSAttributedString.Key.link, value: matchString, range: unwrappedMatch.range)
+            guard let unwrappedMatch = match else { return }
             
-        default:
-            break
-        }
-    })
-   // debugPrint(attributesString)
-    return attributesString
+            let matchString = (self as NSString).substring(with: unwrappedMatch.range)
+            
+            switch unwrappedMatch.resultType {
+            case .link:
+                attributesString.addAttribute(NSAttributedString.Key.link, value: matchString, range: unwrappedMatch.range)
+            default:
+                break
+            }
+        })
+        return attributesString
+    }
 }
