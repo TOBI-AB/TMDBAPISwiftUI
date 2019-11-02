@@ -16,7 +16,7 @@ struct ProductionCompaniesView: View {
 	
 	var body: some View {
 		
-		List {
+		/*List {
 			Section(footer: Color(.systemBackground).listRowInsets(.zero))
 			{
 				ForEach(productionCompanies.sorted { $0.name < $1.name }, id: \.id) { comp in
@@ -25,11 +25,12 @@ struct ProductionCompaniesView: View {
 					}
 				}
 			}
-		}.navigationBarTitle(productionCompanies.count == 1 ? Text("Production Company") : Text("Production Companies"), displayMode: .inline)
+		}.navigationBarTitle(productionCompanies.count == 1 ? Text("Production Company") : Text("Production Companies"), displayMode: .inline)*/
+        Text("ProductionCompaniesView")
 	}
 	
 	
-	fileprivate struct ProductionCompanyView: View {
+	/*fileprivate struct ProductionCompanyView: View {
 		
 		let company: ProductionCompany
 		
@@ -66,5 +67,5 @@ struct ProductionCompaniesView: View {
 				}
 			}
 		}
-	}
+	}*/
 }

@@ -7,8 +7,8 @@
 //
 
 import SwiftUI
-import Kingfisher
-import KingfisherSwiftUI
+//import Kingfisher
+//import KingfisherSwiftUI
 
 
 // MARK: - Movies List View
@@ -21,18 +21,16 @@ struct MoviesListView: View {
     @State private var selectedMovie = Movie.placeholder
     @State private var movieTypePickerSelection = 0
 
-    private let movieTypes: [Endpoint] = [.nowPlaying, .popular, .topRated, .upcoming]
+    private let movieTypes: [Endpoint] = [.trending(.movie, .week),.nowPlaying, .popular, .upcoming]
         
     init() {
-        self.fetcher.fetchMovies(atEndpoint: .nowPlaying)
+        self.fetcher.fetchMovies(atEndpoint: .trending(.movie, .week))
     }
     
     // MARK: Main View
-    @ViewBuilder
     var body: some View {
-       
+    
         NavigationView {
-          
             VStack {
                 NavigationLink(destination: MovieDetailsView(movieId: self.selectedMovie.id).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
                     EmptyView()
@@ -41,18 +39,21 @@ struct MoviesListView: View {
                 Picker(selection: self.$fetcher.movieType, label: Text("")) {
                     ForEach(0..<self.movieTypes.map({$0.stringValue}).count) {
                         Text(self.movieTypes.map({$0.stringValue})[$0])
-                            .tag($0)
+                        .tag($0)
                     }
                 }
-                .fixedSize(horizontal: false, vertical: true)
                 .pickerStyle(SegmentedPickerStyle())
-                .padding([.horizontal],5)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding([.horizontal], 5)
                 
                 MoviessCollectionView(selectedMovie: self.$selectedMovie, selection: self.$selection)
                     .environmentObject(self.fetcher)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationBarTitle(Text("Movies"), displayMode: .large)
+            .onAppear {
+                self.fetcher.movieTypes = self.movieTypes
+            }
             .onReceive(self.fetcher.$movies) { (movies) in
                 
                 let movieIDS = movies.map { $0.id }
@@ -62,44 +63,5 @@ struct MoviesListView: View {
                 }
             }
         }
-    }
-    
-}
-
-// MARK: - Movie Row
-struct MovieRow: View {
-    
-    @State private var imageSize: CGSize = .zero
-    
-    let movie: Movie
-    let size: CGSize
-    
-    var body: some View {
-        
-        VStack(spacing: 5) {
-            
-            // MARK: Movie Poster
-            KFImage(source: TMDBAPI.imageResource(for: movie.posterPath))//, options: [.transition(.fade(0.5))])
-                .resizable()
-                .renderingMode(.original)
-                .aspectRatio(0.7, contentMode: .fit)
-                .frame(width: (size.width - 48) / 2)
-                .cornerRadius(5)
-                .shadow(radius: 10).layoutPriority(1)
-            
-            // MARK: Movie Title
-            /*VStack(alignment: .leading, spacing: 10) {
-             
-             Text(movie.originalTitle).font(.headline).truncationMode(.tail)//.lineLimit(2)//.frame(maxWidth: .infinity)
-             
-             if movie.originalTitle != movie.title {
-             Text(movie.title) .font(.headline)
-             }
-             
-             //Spacer()
-             }*/
-            
-            
-        }.background(Color.blue.opacity(0.6))
     }
 }

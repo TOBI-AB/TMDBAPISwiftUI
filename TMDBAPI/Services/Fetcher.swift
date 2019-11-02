@@ -24,9 +24,9 @@ class Fetcher: ObservableObject {
     @Published var isDetailsLoaded = false
     @Published var isCreditDetailsLoaded = false
     
-    private let movieTypes: [Endpoint] = [.nowPlaying, .popular, .topRated, .upcoming]
+    var movieTypes = [Endpoint]()
     
-    @Published var movieType: Int = 0 {
+    var movieType: Int = 0 {
         didSet {
             self.fetchMovies(atEndpoint: movieTypes[movieType])
         }
@@ -56,7 +56,7 @@ extension Fetcher {
         
         let anyPub: AnyPublisher<RequestResponse, Error> = Webservice.shared.fetchData(atEndpoint: endpoint)
         
-        rt = anyPub
+        _ = anyPub
             .map { $0.results }
             .catch { err -> Just<[Movie]> in
 				debugPrint("Error decoding movies: \(err)")
@@ -64,7 +64,7 @@ extension Fetcher {
         }
         .receive(on: DispatchQueue.main)
         .assign(to: \.movies, on: self)
-       // .store(in: &cancellables)
+        .store(in: &cancellables)
         
                 
         /*let movieTypesPublishers = [Endpoint.popular, Endpoint.upcoming, Endpoint.topRated, Endpoint.nowPlaying].map { movieType -> AnyPublisher<RequestResponse, Error> in

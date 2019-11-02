@@ -10,6 +10,7 @@ import Foundation
 import Kingfisher
 
 
+
 enum Endpoint {
    
     case popular
@@ -17,6 +18,7 @@ enum Endpoint {
     case topRated
     case nowPlaying
     case latest
+    case trending(MediaType, TimeWindow)
     case details(Int)
     case genres
     case reviews(Int)
@@ -37,6 +39,8 @@ enum Endpoint {
             return "Top Rated"
         case .nowPlaying:
             return "Now Playing"
+        case .trending:
+            return "Trending"
         default:
             return ""
         }
@@ -52,6 +56,8 @@ enum Endpoint {
             return "/movie/top_rated"
         case .nowPlaying:
             return "/movie/now_playing"
+        case .trending(let mediaType, let timeWindow):
+            return "/trending/\(mediaType)/\(timeWindow)"
         case .latest:
             return "/movie/latest"
         case .details(let id):
@@ -73,6 +79,15 @@ enum Endpoint {
         case .collection(let id):
             return "/collection/\(id)"
         }
+    }
+    
+    enum MediaType {
+        case movie
+    }
+
+    enum TimeWindow {
+        case day
+        case week
     }
 }
 

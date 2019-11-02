@@ -11,6 +11,14 @@ import KingfisherSwiftUI
 import Kingfisher
 
 struct PersonMoviesView: View {
+    @EnvironmentObject private var fetcher: Fetcher
+    
+    var body: some View {
+        Text("Person movie view")
+    }
+}
+
+/*struct PersonMoviesView: View {
     
     @EnvironmentObject private var fetcher: Fetcher
     
@@ -67,11 +75,11 @@ struct FilmographyRowView: View {
     var body: some View {
         
           ZStack(alignment: .bottom) {
-            ZStack {
+          /*  ZStack {
                 KFImage(TMDBAPI.getMoviePosterUrl(credit.creditProfilePath))//, options: [.cacheOriginalImage])
                     .resizable()
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
-            }
+            }*/
             
             VStack {
                 Text("\(credit.extraInfo)")
@@ -102,5 +110,5 @@ struct FilmographyRowView: View {
             debugPrint("ID ---------------->",self.credit)
         }
     }
-}
+}*/
 

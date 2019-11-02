@@ -8,8 +8,8 @@
 
 import SwiftUI
 import Combine
-import Kingfisher
-import KingfisherSwiftUI
+/*import Kingfisher
+import KingfisherSwiftUI*/
 
 // MARK: - Main View
 struct MovieDetailsView: View {
@@ -37,7 +37,7 @@ struct MovieDetailsView: View {
         self.movieId = movieId
     }
     
-    @ViewBuilder
+   // @ViewBuilder
     var body: some View {
         
         GeometryReader {g in
@@ -73,9 +73,9 @@ struct MovieDetailsView: View {
                 }
                 
                 // MARK: Extra Details
-                if self.movieDetails != Movie.placeholder {
+               /* if self.movieDetails != Movie.placeholder {
                     self.extraDetailsView
-                }
+                }*/
                 
                 // MARK: Reviews
                 VStack(spacing: 8) {
@@ -116,17 +116,17 @@ extension MovieDetailsView {
         ZStack(alignment: .bottom) {
           
             // Poster
-            ZStack(alignment: .bottom) {
+            /*ZStack(alignment: .bottom) {
                 KFImage(source: TMDBAPI.imageResource(for: self.movieDetails.posterPath))
                     .resizable()
                 LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
-            }
+            }*/
             
             // Details: Title, genres, runtime, trailer
             VStack(alignment: .leading, spacing: 10) {
                  titleView
                  
-                 genresView
+              //   genresView
                  
                  HStack {
                      Text(verbatim: movieDetails.releaseDate)
@@ -166,7 +166,7 @@ extension MovieDetailsView {
     }
     
     // Genres View
-    @ViewBuilder
+    /*@ViewBuilder
     var genresView: some View {
         if !movieDetails.genres.isNilAndEmpty {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -183,7 +183,7 @@ extension MovieDetailsView {
             }
             .padding(.leading, -5)
         }
-    }
+    }*/
     
     // Trailer Button
     var trailerButton: some View {
@@ -251,20 +251,21 @@ extension MovieDetailsView {
     
     // MARK: - Extra Details
     @ViewBuilder
-    var extraDetailsView: some View {
+  /*  var extraDetailsView: some View {
         
         // MARK: Collection
-        if movieDetails.belongsToCollection != nil {
+        /*if movieDetails.belongsToCollection != nil {
             NavigationLink(destination: MovieCollectionView(collection: movieDetails.belongsToCollection!)) {
-                Text("Belongs to ") + Text("\(movieDetails.belongsToCollection!._name)").bold()
+                Text("Belongs to ") //+ Text("\(movieDetails.belongsToCollection!._name)").bold()
             }
-        }
+        }*/
         
         // MARK: Spoken Language
         VStack(alignment: .leading, spacing: 5) {
             Text("Spoken Languages:").bold()
             Text(movieDetails.languages)
                // .font(.system(size: 15))
+            Text(<#T##content: StringProtocol##StringProtocol#>)
             
         }
         // MARK: Budget
@@ -295,7 +296,7 @@ extension MovieDetailsView {
                     .padding(.vertical, 5)
             }
         }
-    }
+    }*/
     
     // MARK: - Movie Images
     var movieImagesView: some View {
@@ -379,7 +380,7 @@ extension MovieDetailsView {
            
             if self.movieDetails.reviews!.totalResults > 3 {
                 HStack {
-                    NavigationLink(destination: ListReviewView(title: movieDetails.title, reviews: self.movieDetails.reviews!.results),
+                    NavigationLink(destination:Text("List Details"),
                                    tag: 2,
                                    selection: self.$reviewsNavigationLinkSelection)
                     {

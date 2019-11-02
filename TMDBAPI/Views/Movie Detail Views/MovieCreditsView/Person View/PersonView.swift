@@ -26,9 +26,11 @@ struct PersonView: View {
     
     
     // MARK: Main View
-    @ViewBuilder
+   // @ViewBuilder
     var body: some View {
-       // ZStack {
+        
+        Text(person.name)
+       /* ZStack {
             VStack {
                 KFImage(source: TMDBAPI.imageResource(for: person.profilePath))
                     .resizable()
@@ -81,7 +83,7 @@ struct PersonView: View {
             } else {
                 self.isPersonDetailsLoaded = false
             }
-        }
+        }*/
         
     }
     
