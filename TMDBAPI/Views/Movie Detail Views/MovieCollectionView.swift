@@ -92,7 +92,7 @@ struct MovieCollectionView: View {
         @State private var selection: Int?
         var body: some View {
             VStack {
-                NavigationLink(destination: MovieDetailsView(movieId: movie.id), tag: 0, selection: self.$selection) {
+                NavigationLink(destination: MovieDetailsView(title: movie.originalTitle, movieId: movie.id), tag: 0, selection: self.$selection) {
                     EmptyView()
                 }
                 VStack(spacing: 5) {

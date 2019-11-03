@@ -24,6 +24,7 @@ struct TextView: UIViewRepresentable {
     func updateUIView(_ uiView: UITextView, context: UIViewRepresentableContext<TextView>) {
         
         uiView.isEditable = false
+        uiView.showsVerticalScrollIndicator = false
         
         guard let attributes = self.text.attributes().mutableCopy() as? NSMutableAttributedString else {
             return
@@ -31,7 +32,7 @@ struct TextView: UIViewRepresentable {
         
         let range = NSRange(location: 0, length: self.text.utf16.count)
         
-        attributes.addAttributes([NSAttributedString.Key.font : UIFont.systemFont(ofSize: 16)], range: range)
+        attributes.addAttributes([NSAttributedString.Key.font : UIFont.systemFont(ofSize: 15)], range: range)
         attributes.addAttributes([NSAttributedString.Key.foregroundColor : UIColor.label], range: range)
         
         uiView.attributedText = attributes

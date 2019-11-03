@@ -8,8 +8,8 @@
 
 import SwiftUI
 import Combine
-/*import Kingfisher
-import KingfisherSwiftUI*/
+import Kingfisher
+import KingfisherSwiftUI
 
 // MARK: - Main View
 struct MovieDetailsView: View {
@@ -18,7 +18,7 @@ struct MovieDetailsView: View {
     @EnvironmentObject var fetcher: Fetcher
    
     
-    @State private var movieDetails = Movie.placeholder
+    @State private var movieDetails: Movie?// = Movie.placeholder
     
     @State private var selectedImage = (UIImage(), CGFloat())
     @State private var imagesNavigationLinkSelection: Int?
@@ -31,82 +31,200 @@ struct MovieDetailsView: View {
     @State private var creditPickerSelection: Int?
     @State private var reviewsNavigationLinkSelection: Int?
     
+    
+    @State var movieTitle = ""
+    
+    let title: String
     let movieId: Int
     
-    init(movieId: Int) {
-        self.movieId = movieId
-    }
     
-   // @ViewBuilder
     var body: some View {
         
-        GeometryReader {g in
-            List {
-                
-                // MARK: Top Section
-                self.topSection.frame(height: g.size.height * 0.7)
-                
-                // MARK: Rating View
-                self.ratingView
-                
-                // MARK: Overview
-                self.overviewView
-                
-                // MARK: Cast & Crew
-                VStack {
-                    if self.movieDetails.credits != nil {
-                        PickerView(selection: self.$fetcher.creditPickerSelection, data: ["Cast", "Crew"])
-                            .padding(.vertical, 2)
-                        
-                        MovieCreditsView(credits: self.fetcher.creditPickerSelection == 0 ? self.movieDetails.credits!.cast : self.movieDetails.credits!.crew)
-                    } else {
-                        EmptyView()
-                    }
-                }
-
-                // MARK: Images
-                VStack(spacing: 8) {
-                    if !self.movieDetails.movieImages.isEmpty {
-                        self.ImagesViewSectionHeader
-                        self.movieImagesView
-                    }
-                }
-                
-                // MARK: Extra Details
-               /* if self.movieDetails != Movie.placeholder {
-                    self.extraDetailsView
-                }*/
-                
-                // MARK: Reviews
-                VStack(spacing: 8) {
-                    if self.movieDetails.reviews != nil {
-                        if self.movieDetails.reviews!.totalResults > 0 {
-                            
-                            self.ReviewsSectionHeader
-                            self.movieReviewsView
-                        }
-                    }
-                }
-            }
-            .navigationBarTitle(Text(verbatim: self.movieDetails.title), displayMode: .inline)
-        }
-        .onReceive(self.fetcher.$isDetailsLoaded) { (loaded) in
-            
-            if !self.fetcher.moviesDetails.isEmpty {
-                if let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId }) {
-                    self.movieDetails = movieDetails
-                } else {
-                    debugPrint("New movie ---> \(self.movieId)")
-                    //self.fetcher.fetchMoviesDetails(withIDS: [self.movieId])
-                }
+        self.contentView
+            .navigationBarTitle(Text(verbatim: "\(self.title)"), displayMode: .inline)
+    }
+    
+    var contentView: some View {
+        GeometryReader { g -> AnyView in
+            if !self.fetcher.moviesDetails.isEmpty, let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId }) {
+                return DetailsView(movieDetails: movieDetails, size: g.size).eraseToAnyView()
             } else {
-                return
+                return Text("Loading \(self.title)...")
+                    .font(.headline)
+                    .eraseToAnyView()
             }
         }
     }
 }
 
 
+
+// MARK: - Details View
+struct DetailsView: View {
+    
+    @State private var imagesNavigationLinkSelection: Int?
+    @State private var reviewsNavigationLinkSelection: Int?
+    
+    let movieDetails: Movie
+    let size: CGSize
+    
+    var body: some View {
+        List {
+            topSectionView
+            
+            overview
+            
+            Section(header: imagesSectionHeader) {
+                images
+                    .frame(height: size.height * 0.2)
+            }
+            
+            if self.movieDetails.reviews != nil && !self.movieDetails.reviews!.results.isEmpty {
+                Section(header: reviewsSectionHeader) {
+                    ForEach(self.movieDetails.reviews!.results.count > 4 ? Array(self.movieDetails.reviews!.results.prefix(upTo: 4)) : self.movieDetails.reviews!.results, id: \.id) { review in
+                        
+                        NavigationLink(destination: ReviewView(review: review)) {
+                            ReviewRow(review: review)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Top Section
+    var topSectionView: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(self.movieDetails.originalTitle)
+                .font(.system(.title, design: .rounded))
+                .bold()
+                .layoutPriority(1)
+            
+            if self.movieDetails.genres != nil {
+                Text(self.movieDetails.genres!.compactMap({$0.name}).joined(separator: " • "))
+                    .font(.system(size: 14))
+                
+            }
+        }
+    }
+    
+    // Overview
+    var overview: some View {
+        Text(self.movieDetails.overview)
+            .font(.system(size: 15))
+            .padding(.vertical, 5)
+    }
+    
+    // Images
+    var images: some View {
+        VStack {
+            ScrollView(.horizontal, showsIndicators: false) {
+                self.movieDetails.movieImages.count > 4 ? MovieImagesView(data: Array(self.movieDetails.movieImages.prefix(upTo: 4))) : MovieImagesView(data: self.movieDetails.movieImages)
+            }
+        }
+    }
+    
+    // Review View
+    struct ReviewRow: View {
+        let review: Review
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(review.author.capitalized)
+                    .bold()
+                Text(review.content)
+                    .lineLimit(4)
+            }
+            .font(.system(size: 15))
+        }
+    }
+    
+    // Review Content View
+    struct ReviewView: View {
+        let review: Review
+        
+        var body: some View {
+            TextView(text: review.content)
+                .padding(.horizontal)
+                .padding(.vertical, 5)
+                .navigationBarTitle("\(review.author.capitalized) Review")
+        }
+    }
+    
+    // Reviews List View
+    struct ReviewsView: View {
+
+        let title: String
+        let reviews: [Review]
+        
+        var body: some View {
+            List {
+                ForEach(self.reviews, id: \.id) { review in
+                    NavigationLink(destination: ReviewView(review: review)) {
+                        ReviewRow(review: review)
+                    }
+                }
+            }
+            .navigationBarTitle("\(title) Reviews")
+        }
+    }
+}
+
+// MARK: Sections Headers
+extension DetailsView {
+    
+    // Images Section Headear
+    var imagesSectionHeader: some View {
+        HStack {
+            Text("Images")
+                .bold()
+                .font(.system(size: 15))
+            
+            Spacer()
+            
+            if self.movieDetails.movieImages.count > 4 {
+                HStack {
+                    NavigationLink(destination: MovieImagesCollectionView(movie: movieDetails, images: movieDetails.movieImages),
+                                   tag: 1,
+                                   selection: self.$imagesNavigationLinkSelection)
+                    {
+                            EmptyView()
+                    }
+                    Button("See All") { self.imagesNavigationLinkSelection = 1}
+                        .foregroundColor(Color(.systemBlue))
+                        .font(.system(size: 15, weight: .bold, design: .default))
+                }
+            }
+        }
+    }
+    
+    // Reviews Section Header
+    var reviewsSectionHeader: some View {
+        HStack {
+            Text("Reviews")
+                .bold()
+                .font(.system(size: 15))
+            
+            Spacer()
+            
+            if self.movieDetails.reviews!.results.count > 4 {
+                HStack {
+                    NavigationLink(destination: ReviewsView(title: self.movieDetails.originalTitle, reviews: self.movieDetails.reviews!.results),
+                                   tag: 2,
+                                   selection: self.$reviewsNavigationLinkSelection)
+                    {
+                            EmptyView()
+                    }
+                    Button("See All") { self.reviewsNavigationLinkSelection = 2}
+                        .foregroundColor(Color(.systemBlue))
+                        .font(.system(size: 15, weight: .bold, design: .default))
+                }
+            }
+        }
+    }
+}
+
+/*
 // MARK: Rows Views
 extension MovieDetailsView {
     
@@ -395,3 +513,4 @@ extension MovieDetailsView {
         }
     }
 }
+*/

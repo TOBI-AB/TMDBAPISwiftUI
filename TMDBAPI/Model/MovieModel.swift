@@ -12,7 +12,7 @@ struct RequestResponse: Codable {
     var results: [Movie]
 }
 
-
+// MARK: - Main Modl
 struct Movie: Codable {
     let popularity: Double?
     let voteCount: Int?
@@ -106,6 +106,7 @@ struct Movie: Codable {
     }
 }
 
+// MARK: - Extensions
 extension Movie: Equatable {
     static func ==(lhs: Movie, rhs: Movie) -> Bool {
         lhs.id == rhs.id
@@ -117,6 +118,9 @@ extension Movie: Hashable {
         
     }
 }
+
+
+// MARK: Sub Structs
 
 struct MovieImages: Codable {
       let posters: [MovieImage]

@@ -8,7 +8,18 @@
 
 import Foundation
 
-extension Array {
+extension Array where Element: Hashable & Equatable {
+   
+    // Difference
+    func difference(from array: [Element]) -> [Element] {
+        let rr = self.difference(from: array) { (elem1, elem2) -> Bool in
+            elem1 != elem2
+        }
+        
+        return self.applying(rr) ?? []
+    }
+    
+    // Split To Slices
     func splitToSlices(slicesDimension dimension: Int) -> [[Element]] {
         var multiDimensionsArray = [[Element]]()
         

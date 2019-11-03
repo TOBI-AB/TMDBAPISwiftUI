@@ -66,7 +66,7 @@ extension Fetcher {
         .assign(to: \.movies, on: self)
         .store(in: &cancellables)
         
-                
+    
         /*let movieTypesPublishers = [Endpoint.popular, Endpoint.upcoming, Endpoint.topRated, Endpoint.nowPlaying].map { movieType -> AnyPublisher<RequestResponse, Error> in
             Webservice.shared.fetchData(atEndpoint: movieType)
         }
@@ -99,7 +99,7 @@ extension Fetcher {
                         break
                 }
             }, receiveValue: { (movies) in
-                self.moviesDetails.removeAll()
+                //self.moviesDetails.removeAll()
                 self.moviesDetails = movies
         })
         .store(in: &cancellables)

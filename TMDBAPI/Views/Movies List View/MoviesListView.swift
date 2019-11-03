@@ -32,10 +32,16 @@ struct MoviesListView: View {
     
         NavigationView {
             VStack {
-                NavigationLink(destination: MovieDetailsView(movieId: self.selectedMovie.id).environmentObject(self.fetcher), tag: 0, selection: self.$selection) {
+                // Navigation to details view
+                NavigationLink(destination: MovieDetailsView(title: self.selectedMovie.originalTitle,
+                                                             movieId: self.selectedMovie.id).environmentObject(self.fetcher),
+                               tag: 0,
+                               selection: self.$selection)
+                {
                     EmptyView()
                 }
                 
+                // Picker
                 Picker(selection: self.$fetcher.movieType, label: Text("")) {
                     ForEach(0..<self.movieTypes.map({$0.stringValue}).count) {
                         Text(self.movieTypes.map({$0.stringValue})[$0])
@@ -46,22 +52,25 @@ struct MoviesListView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding([.horizontal], 5)
                 
+                // Collection view
                 MoviessCollectionView(selectedMovie: self.$selectedMovie, selection: self.$selection)
                     .environmentObject(self.fetcher)
+                
+                Spacer()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationBarTitle(Text("Movies"), displayMode: .large)
             .onAppear {
-                self.fetcher.movieTypes = self.movieTypes
+                if self.fetcher.movieTypes.isEmpty {
+                    self.fetcher.movieTypes = self.movieTypes
+                } else {
+                    return
+                }
             }
             .onReceive(self.fetcher.$movies) { (movies) in
-                
                 let movieIDS = movies.map { $0.id }
-                                
-                DispatchQueue.global(qos: .background).async {
-                    self.fetcher.fetchMoviesDetails(withIDS: movieIDS)
-                }
+                self.fetcher.fetchMoviesDetails(withIDS: movieIDS)
             }
         }
     }
+    
 }

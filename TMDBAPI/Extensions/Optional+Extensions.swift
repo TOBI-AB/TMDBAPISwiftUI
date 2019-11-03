@@ -18,7 +18,7 @@ extension Optional where Wrapped == String {
 }
 
 extension Optional where Wrapped: Collection {
-    var isNilAndEmpty: Bool {
+    var isArrayNilAndEmpty: Bool {
         guard let value = self, !value.isEmpty else {
             return true
         }

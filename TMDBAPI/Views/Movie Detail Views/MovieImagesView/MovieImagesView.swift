@@ -29,11 +29,13 @@ struct MovieImagesView: View {
         var body: some View {
             KFImage(source: TMDBAPI.imageResource(for: movieImage.filePath))
                 .resizable()
+                .cancelOnDisappear(true)
                 .aspectRatio(CGFloat(movieImage.aspectRatio), contentMode: .fit)
                 .onTapGesture {
                     ImageCache.default.notifyImageSelection(for: self.movieImage,
                                                             notificationName: .imagesSectionDidSelectedImage)
-			}.cornerRadius(5)
+			}
+            .cornerRadius(5)
         }
     }
 }
