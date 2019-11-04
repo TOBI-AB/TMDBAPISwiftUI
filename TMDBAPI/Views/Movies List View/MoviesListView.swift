@@ -45,7 +45,7 @@ struct MoviesListView: View {
                 Picker(selection: self.$fetcher.movieType, label: Text("")) {
                     ForEach(0..<self.movieTypes.map({$0.stringValue}).count) {
                         Text(self.movieTypes.map({$0.stringValue})[$0])
-                        .tag($0)
+                            .tag($0)
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
@@ -72,5 +72,4 @@ struct MoviesListView: View {
             }
         }
     }
-    
 }

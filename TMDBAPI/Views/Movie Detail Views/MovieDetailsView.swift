@@ -18,7 +18,7 @@ struct MovieDetailsView: View {
     @EnvironmentObject var fetcher: Fetcher
    
     
-    @State private var movieDetails: Movie?// = Movie.placeholder
+    @State private var movieDetails: Movie?
     
     @State private var selectedImage = (UIImage(), CGFloat())
     @State private var imagesNavigationLinkSelection: Int?
@@ -41,7 +41,10 @@ struct MovieDetailsView: View {
     var body: some View {
         
         self.contentView
-            .navigationBarTitle(Text(verbatim: "\(self.title)"), displayMode: .inline)
+            .navigationBarTitle(Text(""), displayMode: .inline)
+           /* .onAppear {
+                debugPrint(self.movieId)
+        }*/
     }
     
     var contentView: some View {
@@ -49,9 +52,12 @@ struct MovieDetailsView: View {
             if !self.fetcher.moviesDetails.isEmpty, let movieDetails = self.fetcher.moviesDetails.first(where: { $0.id == self.movieId }) {
                 return DetailsView(movieDetails: movieDetails, size: g.size).eraseToAnyView()
             } else {
-                return Text("Loading \(self.title)...")
-                    .font(.headline)
-                    .eraseToAnyView()
+                return VStack {
+                    Spacer()
+                    Text("Loading \(self.title)...")
+                    .padding()
+                    Spacer()
+                }.eraseToAnyView()
             }
         }
     }
@@ -64,19 +70,36 @@ struct DetailsView: View {
     
     @State private var imagesNavigationLinkSelection: Int?
     @State private var reviewsNavigationLinkSelection: Int?
+    @State private var creditPickerSelection = 0
     
     let movieDetails: Movie
     let size: CGSize
     
+    // Main View
     var body: some View {
         List {
+           
             topSectionView
+            
+            ratingView
             
             overview
             
-            Section(header: imagesSectionHeader) {
-                images
-                    .frame(height: size.height * 0.2)
+            Section(header: CommonHeader(title: "Extra Details"), footer: EmptyView()) {
+                extraDetailsView
+            }
+            
+            if movieDetails.credits != nil {
+                Section(header: CommonHeader(title: "Credits")) {
+                    creditsView
+                }
+            }
+            
+            if !self.movieDetails.movieImages.isEmpty {
+                Section(header: imagesSectionHeader) {
+                    images
+                        .frame(height: size.height * 0.2)
+                }
             }
             
             if self.movieDetails.reviews != nil && !self.movieDetails.reviews!.results.isEmpty {
@@ -95,24 +118,105 @@ struct DetailsView: View {
     // Top Section
     var topSectionView: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(self.movieDetails.originalTitle)
-                .font(.system(.title, design: .rounded))
-                .bold()
-                .layoutPriority(1)
-            
-            if self.movieDetails.genres != nil {
-                Text(self.movieDetails.genres!.compactMap({$0.name}).joined(separator: " • "))
-                    .font(.system(size: 14))
+            // Title
+            Group {
+                Text(self.movieDetails.originalTitle)
                 
+                if self.movieDetails.originalTitle != self.movieDetails.title {
+                    Text(self.movieDetails.title)
+                }
+            }
+            .font(.system(size: 24, weight: .semibold, design: .rounded))
+            .frame(maxHeight: .infinity)
+                    
+            // Status, Year of production
+            if !movieDetails.status.isNilAndEmpty {
+                HStack(spacing: 5) {
+                    Text(movieDetails.status!.localizedUppercase)
+                        .font(.system(size: 14))
+                        .fontWeight(.semibold)
+                    
+                    if movieDetails.releaseDate != nil {
+                        Text("•")
+                            .fontWeight(.semibold)
+                        Text("\(movieDetails.releaseDate!.getComponents([.year]))").font(
+                            .system(size: 14))
+                    }
+                }
+            }
+            
+            // Genres
+            if self.movieDetails.genres != nil {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(self.movieDetails.genres!.compactMap({ $0.name}), id: \.self) { genre in
+                            Text(genre)
+                                .font(.system(size: 14))
+                                .padding(2)
+                                .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.gray.opacity(0.7)))
+                        }
+                    }
+                    .padding([.leading,.vertical],5)
+                }
+                .padding(.leading, -5)
             }
         }
+    }
+    
+    // MARK: Rating View
+    var ratingView: some View {
+      
+        HStack {
+        
+            VStack(alignment: .center, spacing: 5) {
+                Text("RATING")
+                Text(verbatim: "\(movieDetails.voteAverage)")
+                    .fontWeight(.semibold)
+            }.font(.system(size: 15)).padding(.horizontal)
+            
+            if movieDetails.voteCount != nil {
+                Divider()
+                VStack(alignment: .center, spacing: 5) {
+                    Text("VOTES")
+                    Text(verbatim: "\(movieDetails.voteCount!)")
+                        .fontWeight(.semibold)
+                }.font(.system(size: 15)).padding(.horizontal)
+            }
+            
+            if movieDetails.popularity != nil {
+                Divider()
+                VStack(alignment: .center, spacing: 5) {
+                    Text("POPULARITY")
+                    Text(verbatim: "\(movieDetails.popularity!)")
+                        .fontWeight(.semibold)
+                }.font(.system(size: 15)).padding(.horizontal)
+            }
+        }
+            .frame(maxWidth:.infinity)
     }
     
     // Overview
     var overview: some View {
         Text(self.movieDetails.overview)
             .font(.system(size: 15))
+            .multilineTextAlignment(.leading)
+            .frame(maxHeight: .infinity)
             .padding(.vertical, 5)
+    }
+    
+    // Credits
+    var creditsView: some View {
+        VStack {
+            Picker(selection: self.$creditPickerSelection, label: EmptyView()) {
+                ForEach(0..<["Cast", "Crew"].count) {
+                    Text(["Cast", "Crew"][$0])
+                        .tag($0)
+                }
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            
+            MovieCreditsView(credits: self.creditPickerSelection == 0 ? self.movieDetails._credits.cast : self.movieDetails._credits.crew, size: self.size)
+        }
     }
     
     // Images
@@ -170,8 +274,69 @@ struct DetailsView: View {
     }
 }
 
+// MARK: - Extra Details View
+extension DetailsView {
+    
+    // MARK: Extra Details
+    var extraDetailsView: some View {
+        Group {
+            Text(movieDetails.movieStatus).bold() + Text(" \(movieDetails.movieReleaseDate)")
+            if movieDetails.runtime != nil {
+                Text("Runtime: ").bold() + Text("\(movieDetails.runtime!.toTime)")
+            }
+            
+            languagesView
+          
+            if movieDetails.revenue != nil {
+                budgetView
+            }
+            
+            if !movieDetails.productionCountries.isArrayNilAndEmpty {
+                productionCountries
+            }
+        }
+        .font(.system(size: 15))
+    }
+    
+    // Spoken Language
+    var languagesView: some View {
+        Group {
+            Text(movieDetails.languages.count == 1 ? "Spoken Languages: " : "Spoken Languages:\n").bold()
+                +
+            Text(movieDetails.languages)
+        }
+        //.frame(maxHeight: .infinity)
+    }
+
+    // Budget
+    var budgetView: some View {
+        Text("Budget: ").bold() + Text("\(movieDetails.budget!.toCurrency)")
+    }
+           
+    // Production Countries
+    var productionCountries: some View {
+        Group {
+            Text(movieDetails.productionCountries!.count > 1 ? "Production Countries:\n" : "Production Countries: ").bold()
+                +
+            Text("\(movieDetails.productionCountries!.compactMap {$0.name}.joined(separator: "\n"))")
+        }
+        .frame(maxHeight: .infinity)
+    }
+}
+
 // MARK: Sections Headers
 extension DetailsView {
+    
+    // Common Header
+    struct CommonHeader: View {
+        let title: String
+        
+        var body: some View {
+            Text(title)
+                .bold()
+                .font(.system(size: 15))
+        }
+    }
     
     // Images Section Headear
     var imagesSectionHeader: some View {

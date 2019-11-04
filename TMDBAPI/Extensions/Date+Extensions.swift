@@ -14,6 +14,10 @@ extension Date {
         let calendar = Calendar.current
         let dateComponents = calendar.dateComponents(components, from: self)
         
-        return String((dateComponents.year ?? Int()))
+        if let year = dateComponents.year {
+            return String(year)
+        }
+        
+        return ""
     }
 }

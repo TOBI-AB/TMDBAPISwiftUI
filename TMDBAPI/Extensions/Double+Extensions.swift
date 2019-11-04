@@ -25,6 +25,7 @@ extension Double {
     
     var toCurrency: String {
         let num = NumberFormatter.golbalFormatter
+        num.locale = Locale(identifier: "en-US")
         num.numberStyle = .currency
         num.maximumFractionDigits = 2
         num.decimalSeparator = "."

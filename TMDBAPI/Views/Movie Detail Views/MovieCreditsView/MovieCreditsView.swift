@@ -15,7 +15,7 @@ import class Kingfisher.ImageCache
 struct MovieCreditsView: View {
 	        
     let credits: [Credit]
-    //let proxy: GeometryProxy
+    let size: CGSize
     
     @State private var fetcher = Fetcher()
     @State private var person = Person.placeholder
@@ -27,10 +27,10 @@ struct MovieCreditsView: View {
             HStack {
                 ForEach(self.credits, id:\.creditIdentifier) { credit in
                     MovieCreditRow(credit: credit).environmentObject(self.fetcher)
-                        .frame(width: UIScreen.width / 4, height: (UIScreen.width / 4) / 0.7)
+                        .frame(width: self.size.width / 4, height: (self.size.width / 4) / 0.7)
                 }
-            }//.padding(.horizontal)
-        }//.padding(.horizontal, -10)
+            }
+        }
     }
 }
 //fileprivate
@@ -77,7 +77,8 @@ extension MovieCreditsView {
                     }
                 }
                 .foregroundColor(.white)
-                .multilineTextAlignment(.center).padding(5)
+                .multilineTextAlignment(.center)
+                .padding(5)
             }
             .onTapGesture {
                 self.selection = 0

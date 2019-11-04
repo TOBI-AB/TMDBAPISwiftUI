@@ -33,6 +33,7 @@ struct MovieCollectionView: View {
                         ZStack(alignment: .bottom) {
                             KFImage(TMDBAPI.getMoviePosterUrl(self.movieCollectionDetails.posterPath, withSize: "original"))
                                 .resizable()
+                                .cancelOnDisappear(true)
                                 .aspectRatio(3/4, contentMode: .fit)
                             
                             LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
@@ -56,7 +57,7 @@ struct MovieCollectionView: View {
                     Divider().padding(.leading)
                     
                     // Movies
-                    VStack(alignment: .leading, spacing: 8) {
+                    /*VStack(alignment: .leading, spacing: 8) {
                         Text("Movies")
                             .bold()
                             .font(.headline)
@@ -70,7 +71,7 @@ struct MovieCollectionView: View {
                         }
                     }
                     .frame(maxHeight: g.size.height * 0.25)
-                    .padding(.horizontal)
+                    .padding(.horizontal)*/
                     
                     Spacer()
                 }
@@ -98,11 +99,12 @@ struct MovieCollectionView: View {
                 VStack(spacing: 5) {
                     KFImage(TMDBAPI.getMoviePosterUrl(self.movie.posterPath))
                         .resizable()
+                        .cancelOnDisappear(true)
                         .frame(width: proxy.size.width / 4)
                         .cornerRadius(8)
                     
-                    Text("\(self.movie.releaseDate.toDate.getComponents([.year]))")
-                        .bold()
+                    /*Text("\(self.movie.releaseDate.toDate.getComponents([.year]))")
+                        .bold()*/
                 }.onTapGesture {
                     self.selection = 0
                 }

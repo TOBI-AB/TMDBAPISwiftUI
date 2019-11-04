@@ -33,8 +33,9 @@ struct Movie: Codable {
     let runtime: Double?
     let voteAverage: Double
     let overview: String
-    let releaseDate: String
+    let releaseDate: Date?
     let spokenLanguages: [SpokenLanguage]?
+    let status: String?
     let videos: MovieVideos?
     let credits: Credits?
     let reviews: Reviews?
@@ -69,8 +70,9 @@ struct Movie: Codable {
               runtime: nil,
               voteAverage:Double(),
               overview: "",
-              releaseDate: "",
+              releaseDate: nil,
               spokenLanguages: nil,
+              status: nil,
               videos: nil,
               credits: nil,
               reviews: nil,
@@ -103,6 +105,35 @@ struct Movie: Codable {
     var movieImages: [MovieImage] {
         guard let unwrappedImages = self.images else { return [] }
         return unwrappedImages.posters
+    }
+    
+    var movieReleaseDate: String {
+        
+        if let releaseDate = self.releaseDate {
+            let formatter = DateFormatter()
+            formatter.locale = Locale.current
+            formatter.dateStyle = .medium
+            return formatter.string(from: releaseDate)
+        } else {
+            return "N/A"
+        }
+    }
+    
+    var _credits: (cast:[Cast], crew:[Crew]) {
+        guard let unwrappdCredits = self.credits else {
+            return ([], [])
+        }
+        
+        return (unwrappdCredits.cast, unwrappdCredits.crew)
+    }
+    
+    var movieStatus: String {
+        switch self.status {
+        case "Released":
+            return "Released date:"
+        default:
+            return self.status ?? ""
+        }
     }
 }
 

@@ -13,6 +13,11 @@ extension JSONDecoder {
     static var decoder: JSONDecoder {
         let dec = JSONDecoder()
         dec.keyDecodingStrategy = .convertFromSnakeCase
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "y-MM-d"
+        dec.dateDecodingStrategy = .formatted(formatter)
+        
         return dec
     }
 }

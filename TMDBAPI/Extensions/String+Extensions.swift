@@ -13,6 +13,8 @@ extension String {
     var toDate: Date {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-mm-dd"
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
         
         return formatter.date(from: self) ?? Date()
     }

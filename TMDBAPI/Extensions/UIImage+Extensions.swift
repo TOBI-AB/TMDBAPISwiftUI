@@ -10,7 +10,7 @@ import SwiftUI
 
 
 extension UIImage {
-    var averageColor: UIColor? {
+  /*  var averageColor: UIColor? {
         
         guard let inputImage = self.ciImage ?? CIImage(image: self) else { return nil }
         
@@ -30,7 +30,7 @@ extension UIImage {
         let color = UIColor(red: CGFloat(bitmap[0]) / 255, green: CGFloat(bitmap[1]) / 255, blue: CGFloat(bitmap[2]) / 255, alpha: CGFloat(bitmap[3]) / 255)
         
         return nil
-    }
+    }*/
 }
 /*
  extension UIImage {
