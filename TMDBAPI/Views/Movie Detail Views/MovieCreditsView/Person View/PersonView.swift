@@ -22,7 +22,7 @@ struct PersonView: View {
     @State private var isPersonDetailsLoaded = false
     @State private var done = false
    
-    let credit: Credit
+    let credit: GenericCodable
     
     
     // MARK: Main View

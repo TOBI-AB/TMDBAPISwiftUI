@@ -7,8 +7,8 @@
 //
 
 import SwiftUI
-import Kingfisher
-import KingfisherSwiftUI
+/*import Kingfisher
+import KingfisherSwiftUI*/
 
 struct ProductionCompaniesView: View {
 	

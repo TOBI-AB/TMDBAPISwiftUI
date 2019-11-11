@@ -21,7 +21,7 @@ struct PersonMoviesCast: Codable {
     let title: String?
 }
 
-extension PersonMoviesCast: Credit {
+/*extension PersonMoviesCast: Credit {
     var creditName: String {
         character ?? ""
     }
@@ -42,7 +42,7 @@ extension PersonMoviesCast: Credit {
         id
     }
 }
-
+*/
 struct PersonMoviesCrew: Codable {
     let job: String
     let creditId: String
@@ -50,7 +50,7 @@ struct PersonMoviesCrew: Codable {
     let id: Int
     let title: String
 }
-
+/*
 extension PersonMoviesCrew: Credit {
     var creditName: String {
         job
@@ -72,3 +72,4 @@ extension PersonMoviesCrew: Credit {
         id
     }
 }
+*/

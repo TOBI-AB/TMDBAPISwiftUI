@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import Kingfisher
+//import Kingfisher
 import KingfisherSwiftUI
 
 struct MovieImagesView: View {
@@ -15,11 +15,14 @@ struct MovieImagesView: View {
     let data: [MovieImage]
     
     var body: some View {
-        HStack {
-            ForEach(data, id: \.self) {movieImage in
-                MovieImageView(movieImage: movieImage)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(data, id: \.self) {movieImage in
+                    MovieImageView(movieImage: movieImage)
+                }
             }
-        }.padding(.vertical, 5)
+            .padding(.vertical, 5)
+        }
     }
     
     struct MovieImageView: View {
@@ -31,11 +34,11 @@ struct MovieImagesView: View {
                 .resizable()
                 .cancelOnDisappear(true)
                 .aspectRatio(CGFloat(movieImage.aspectRatio), contentMode: .fit)
-                .onTapGesture {
+                /*.onTapGesture {
                     ImageCache.default.notifyImageSelection(for: self.movieImage,
                                                             notificationName: .imagesSectionDidSelectedImage)
-			}
-            .cornerRadius(5)
+			}*/
+            .cornerRadius(10)
         }
     }
 }

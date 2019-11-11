@@ -17,29 +17,24 @@ struct Crew: Codable {
 	let profilePath: String?
 }
 
-extension Crew: Credit {
-	
-	var creditIdentifier: String {
-		creditId
-	}
-	
-	var ID: Int {
-		id
-	}
-	
-	var type: CreditType {
-		.crew
-	}
-	
-	var creditName: String {
-		name
-	}
-	
-	var extraInfo: String {
-		job
-	}
-	
-	var creditProfilePath: String? {
-		profilePath
-	}
+extension Crew: GenericCodable {
+    var identifier: String {
+        self.creditId
+    }
+    
+    var type: GenericCodableType {
+        .cast
+    }
+    
+    var typeTitle: String {
+        self.name
+    }
+    
+    var typeProfileImageUrl: String {
+        self.profilePath ?? ""
+    }
+    
+    var typeExtraInfo: String {
+        job
+    }
 }

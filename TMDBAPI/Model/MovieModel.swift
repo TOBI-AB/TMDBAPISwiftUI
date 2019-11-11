@@ -80,13 +80,6 @@ struct Movie: Codable {
         )
     }
 
-    var languages: String {
-        guard let unwrappedSpoLang = self.spokenLanguages else { return "" }
-            
-        let langs = unwrappedSpoLang.filter { !$0.name.isEmpty }.compactMap { $0.name }.joined(separator: "\n")
-        
-        return langs
-    }
         
     var _videos: [MovieVideo] {
         guard let unwrappedVideos = self.videos?.results else {
@@ -135,6 +128,14 @@ struct Movie: Codable {
             return self.status ?? ""
         }
     }
+    
+    var _releaseDate: Date {
+        guard let unwrappedDate = self.releaseDate else {
+            return .init()
+        }
+        
+        return unwrappedDate
+    }
 }
 
 // MARK: - Extensions
@@ -150,8 +151,35 @@ extension Movie: Hashable {
     }
 }
 
+extension Movie: GenericCodable {
+    var identifier: String {
+        "\(self.id)"
+    }
+    
+    var type: GenericCodableType {
+        .movie
+    }
+    
+    var typeTitle: String {
+        self.originalTitle
+    }
+    
+    var typeProfileImageUrl: String {
+        self.posterPath ?? ""
+    }
+    
+    var typeExtraInfo: String {
+        
+        guard let unwrappedReleaseDate = self.releaseDate else {
+            return ""
+        }
+        
+        return unwrappedReleaseDate.getComponents([.year])
+    }
+}
 
-// MARK: Sub Structs
+
+// MARK: - Sub Structs
 
 struct MovieImages: Codable {
       let posters: [MovieImage]

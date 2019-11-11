@@ -19,6 +19,7 @@ enum Endpoint {
     case nowPlaying
     case latest
     case trending(MediaType, TimeWindow)
+    case similar(Int)
     case details(Int)
     case genres
     case reviews(Int)
@@ -58,6 +59,8 @@ enum Endpoint {
             return "/movie/now_playing"
         case .trending(let mediaType, let timeWindow):
             return "/trending/\(mediaType)/\(timeWindow)"
+        case .similar(let id):
+            return "/movie/\(id)/similar"
         case .latest:
             return "/movie/latest"
         case .details(let id):

@@ -13,6 +13,7 @@ class Fetcher: ObservableObject {
    
     @Published var movies: [Movie] = []
     @Published var moviesDetails = [Movie]()
+    @Published var similarMovies = [Movie]()
     @Published var movieDetails = Movie.placeholder
     @Published var persons = [Person]()
     @Published var creditPickerSelection = 0
@@ -28,11 +29,12 @@ class Fetcher: ObservableObject {
     
     var movieType: Int = 0 {
         didSet {
-            self.fetchMovies(atEndpoint: movieTypes[movieType])
+            self.fetchMovies(atEndpoint: movieTypes[movieType], key:\.movies)
         }
     }
     	
     private var cancellables: Set<AnyCancellable> = []
+    private var moviesCanc: AnyCancellable?
     
     var rt: AnyCancellable?
     
@@ -50,31 +52,24 @@ class Fetcher: ObservableObject {
 extension Fetcher {
     
 	// MARK: Fetch Movies
-    func fetchMovies(atEndpoint endpoint: Endpoint) {
-        
-       // self.movies.removeAll()
+    func fetchMovies(atEndpoint endpoint: Endpoint, key path: ReferenceWritableKeyPath<Fetcher, [Movie]>) {
         
         let anyPub: AnyPublisher<RequestResponse, Error> = Webservice.shared.fetchData(atEndpoint: endpoint)
         
-        _ = anyPub
+        moviesCanc = anyPub.prefix(4)
             .map { $0.results }
             .catch { err -> Just<[Movie]> in
-				debugPrint("Error decoding movies: \(err)")
+                debugPrint("Error decoding movies: \(err.localizedDescription)")
                 return Just([])
-        }
+            }
         .receive(on: DispatchQueue.main)
-        .assign(to: \.movies, on: self)
-        .store(in: &cancellables)
+        .assign(to: path, on: self)
+      //  .store(in: &cancellables)
         
-    
-        /*let movieTypesPublishers = [Endpoint.popular, Endpoint.upcoming, Endpoint.topRated, Endpoint.nowPlaying].map { movieType -> AnyPublisher<RequestResponse, Error> in
-            Webservice.shared.fetchData(atEndpoint: movieType)
-        }
-        
-        _ = Publishers.MergeMany(movieTypesPublishers)*/
+        moviesCanc?.store(in: &cancellables)//cancel()
     }
     
-    // MARK: Fetrch Movies Details
+    // MARK: Fetch Movies Details
     func fetchMoviesDetails(withIDS ids: [Int]) {
         
         let parameters = ["append_to_response":"videos,images,credits,reviews"].compactMapValues {
@@ -85,7 +80,7 @@ extension Fetcher {
             Webservice.shared.fetchData(atEndpoint: .details(id), parameters: parameters)
         }
         
-       _ = Publishers.MergeMany(detailsPublishers)
+       let detailsCanc = Publishers.MergeMany(detailsPublishers)
             .collect()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { (completion) in
@@ -102,7 +97,8 @@ extension Fetcher {
                 //self.moviesDetails.removeAll()
                 self.moviesDetails = movies
         })
-        .store(in: &cancellables)
+        
+        detailsCanc.cancel()
     }
     
     // MARK: Fetch Casts & Credits details
@@ -111,7 +107,7 @@ extension Fetcher {
             Webservice.shared.fetchData(atEndpoint: .person(id))
         }
         
-        _ = Publishers.MergeMany(personsPublishers)
+        let personsDetailsCanc = Publishers.MergeMany(personsPublishers)
             .collect()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { (completion) in
@@ -123,22 +119,25 @@ extension Fetcher {
                 }
             }, receiveValue: { (persons) in
                 self.persons = persons
-            }).store(in: &cancellables)
+            })
+        
+        personsDetailsCanc.cancel()
     }
     
     // MARK: Fetch Credit Details
-    func fetchCreditDetails(_ credit: Credit) {
+   /* func fetchCreditDetails(_ credit: Credit) {
         
         let personPublisher: AnyPublisher<Person, Error> = Webservice.shared.fetchData(atEndpoint: .person(credit.ID))
         
-        _ = personPublisher
+        let personCanc = personPublisher
             .map { $0 }
             .catch { err -> Just<Person> in
                 debugPrint("Error fetching Person details--> \(err)")
                 return Just(Person.placeholder)
             }
         .assign(to: \.person, on: self)
-        .store(in: &cancellables)
+        
+        personCanc.cancel()
         
     }
     
@@ -147,7 +146,7 @@ extension Fetcher {
 
         let personMoviesPublisher: AnyPublisher<PersonMovies, Error> = Webservice.shared.fetchData(atEndpoint: .personeMovies(person.ID))
         
-        _ = personMoviesPublisher
+        let personMoviesCanc = personMoviesPublisher
             .map { ($0.cast, $0.crew) }
             .catch { err -> Just<([PersonMoviesCast], [PersonMoviesCrew])> in
                 debugPrint("Person Movie error -> \(err)")
@@ -155,14 +154,15 @@ extension Fetcher {
             }
             .receive(on: DispatchQueue.main)
             .assign(to: \.personMovies, on: self)
-            .store(in: &cancellables)
+            
+        personMoviesCanc.cancel()
     }
-    
+    */
     // MARK: Fetch Movie Collection
     func fetchMovieCollectionDetails(with id: Int) {
         let collectionPublisher: AnyPublisher<MovieCollectionDetails, Error> = Webservice.shared.fetchData(atEndpoint: .collection(id))
         
-        _ = collectionPublisher
+        let movieCollection = collectionPublisher
             .map { $0 }
             .catch({ (error) -> Just<MovieCollectionDetails> in
                 debugPrint("Error fetching collection details: \(error)")
@@ -170,6 +170,8 @@ extension Fetcher {
             })
             .receive(on: DispatchQueue.main)
             .assign(to: \.movieCollectionDetails, on: self)
-            .store(in: &cancellables)
+
+        movieCollection.cancel()
+
     }
 }

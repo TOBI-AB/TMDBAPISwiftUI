@@ -8,14 +8,16 @@
 
 import SwiftUI
 //import Kingfisher
-//import KingfisherSwiftUI
+import KingfisherSwiftUI
 
 
 // MARK: - Movies List View
 struct MoviesListView: View {
     
     @ObservedObject var fetcher = Fetcher()
-    @ObservedObject var movieTypeHandler = MovieTypeHandler.shared
+    
+    @State private var movies = [Movie]()
+    
     @State private var moviesIds = [Int]()
     @State private var selection: Int?
     @State private var selectedMovie = Movie.placeholder
@@ -24,7 +26,7 @@ struct MoviesListView: View {
     private let movieTypes: [Endpoint] = [.trending(.movie, .week),.nowPlaying, .popular, .upcoming]
         
     init() {
-        self.fetcher.fetchMovies(atEndpoint: .trending(.movie, .week))
+        self.fetcher.fetchMovies(atEndpoint: .trending(.movie, .week), key: \Fetcher.movies)
     }
     
     // MARK: Main View
@@ -53,7 +55,7 @@ struct MoviesListView: View {
                 .padding([.horizontal], 5)
                 
                 // Collection view
-                MoviessCollectionView(selectedMovie: self.$selectedMovie, selection: self.$selection)
+                MoviessCollectionView(data: self.movies,selectedMovie: self.$selectedMovie, selection: self.$selection, scrollDirection: .vertical)
                     .environmentObject(self.fetcher)
                 
                 Spacer()
@@ -67,8 +69,10 @@ struct MoviesListView: View {
                 }
             }
             .onReceive(self.fetcher.$movies) { (movies) in
+                self.movies = movies
                 let movieIDS = movies.map { $0.id }
                 self.fetcher.fetchMoviesDetails(withIDS: movieIDS)
+                
             }
         }
     }

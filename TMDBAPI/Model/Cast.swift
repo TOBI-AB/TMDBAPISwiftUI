@@ -18,8 +18,29 @@ struct Cast: Codable, Hashable {
 	let profilePath: String?
 }
 
-extension Cast: Credit {
-	
+extension Cast: GenericCodable {
+    var identifier: String {
+        self.creditId
+    }
+    
+    var type: GenericCodableType {
+        .cast
+    }
+    
+    var typeTitle: String {
+        self.name
+    }
+    
+    var typeProfileImageUrl: String {
+        self.profilePath ?? ""
+    }
+    
+    var typeExtraInfo: String {
+        character
+    }
+}
+
+/*extension Cast: Credit {
 	
 	var type: CreditType {
 		.cast
@@ -44,4 +65,4 @@ extension Cast: Credit {
 	var creditProfilePath: String? {
 		profilePath
 	}
-}
+}*/

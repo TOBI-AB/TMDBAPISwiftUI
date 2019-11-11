@@ -8,6 +8,11 @@
 
 import SwiftUI
 
+enum ScrollDirection {
+    case horizontal
+    case vertical
+}
+
 class MoviessCollectionViewCoordinator: NSObject {
     var dataSource: UICollectionViewDiffableDataSource<Int, Movie>?
     var didSelectedMovie: ((Movie) -> ())?
@@ -27,20 +32,25 @@ extension MoviessCollectionViewCoordinator: UICollectionViewDelegate {
 
 struct MoviessCollectionView: UIViewRepresentable {
  
-    @EnvironmentObject var fetcher: Fetcher
+   // @EnvironmentObject var fetcher: Fetcher
+    let data: [Movie]
     @Binding var selectedMovie: Movie
     @Binding var selection: Int?
+    let scrollDirection: ScrollDirection
     
-    
+
     typealias UIViewType = UICollectionView
     
     func makeUIView(context: UIViewRepresentableContext<MoviessCollectionView>) -> UICollectionView {
         
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: creatCompositionalLayout())
+        let layout = creatCompositionalLayout()
+        layout.invalidateLayout()
+                
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .systemBackground
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: CollectionViewCell.reuseIdentifier)
         collectionView.delegate = context.coordinator
-                
+                        
         let dataSource = UICollectionViewDiffableDataSource<Int, Movie>(collectionView: collectionView) { (collectionView, indexPath, model)  in
             
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CollectionViewCell.reuseIdentifier, for: indexPath) as? CollectionViewCell else {
@@ -57,9 +67,8 @@ struct MoviessCollectionView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UICollectionView, context: UIViewRepresentableContext<MoviessCollectionView>) {
-    
-        guard let dataSource = context.coordinator.dataSource, !self.fetcher.movies.isEmpty else { return }
-                
+        guard let dataSource = context.coordinator.dataSource, !self.data.isEmpty else { return }
+                        
         populate(uiView, dataSource: dataSource)
         
         context.coordinator.didSelectedMovie = { movie in
@@ -84,10 +93,13 @@ extension MoviessCollectionView {
         
         var snapShot = NSDiffableDataSourceSnapshot<Int, Movie>()
         
-        if !fetcher.movies.isEmpty  {
+        if !data.isEmpty {//!fetcher.movies.isEmpty  {
+                        
             snapShot.appendSections([0])
-            snapShot.appendItems(self.fetcher.movies)
+            snapShot.appendItems(self.data)//fetcher.movies)
             dataSource.apply(snapShot, animatingDifferences: true)
+        } else {
+            debugPrint("------- EMPTY -------")
         }
     }
 }
@@ -96,17 +108,23 @@ extension MoviessCollectionView {
 extension MoviessCollectionView {
   
     fileprivate func creatCompositionalLayout() -> UICollectionViewLayout {
-        
+                
+        let layoutDimension: NSCollectionLayoutDimension = (scrollDirection == .horizontal) ? .fractionalHeight(1) :  .fractionalHeight(1/3)
+                
         let layout = UICollectionViewCompositionalLayout {(_, _) -> NSCollectionLayoutSection? in
             
             let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)))
         
-            item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+            item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 2.5, bottom: 5, trailing: 2.5)
             
-            let group = NSCollectionLayoutGroup.horizontal(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1/3)), subitem: item, count: 3)
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: layoutDimension), subitem: item, count: (self.scrollDirection == .horizontal) ? 4 : 3)
             
             let section = NSCollectionLayoutSection(group: group)
-            //section.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
+            
+            let sectionContentInsets: NSDirectionalEdgeInsets = (self.scrollDirection == ScrollDirection.horizontal) ? .init() : .init(top: 0, leading: 5, bottom: 0, trailing: 5)
+            
+            section.contentInsets =  sectionContentInsets
+            section.orthogonalScrollingBehavior = (self.scrollDirection == ScrollDirection.horizontal) ? .continuousGroupLeadingBoundary : .none
             
             return section
         }

@@ -7,8 +7,8 @@
 //
 
 import SwiftUI
-import KingfisherSwiftUI
-import Kingfisher
+/*import KingfisherSwiftUI
+import Kingfisher*/
 
 struct PersonMoviesView: View {
     @EnvironmentObject private var fetcher: Fetcher

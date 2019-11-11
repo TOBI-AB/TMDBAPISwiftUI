@@ -14,7 +14,7 @@ import class Kingfisher.ImageCache
 // MARK: - Movie Credits View
 struct MovieCreditsView: View {
 	        
-    let credits: [Credit]
+    let credits: [GenericCodable]
     let size: CGSize
     
     @State private var fetcher = Fetcher()
@@ -25,73 +25,51 @@ struct MovieCreditsView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack {
-                ForEach(self.credits, id:\.creditIdentifier) { credit in
-                    MovieCreditRow(credit: credit).environmentObject(self.fetcher)
+                ForEach(self.credits, id:\.identifier) { credit in
+                    RowView(genericType: credit)
                         .frame(width: self.size.width / 4, height: (self.size.width / 4) / 0.7)
                 }
             }
         }
     }
 }
-//fileprivate
-// MARK: - Movie Credit Row
-extension MovieCreditsView {
 
-    struct MovieCreditRow: View {
-	
-        @State var selection: Int?
-        @State private var done = false
-                
-        let credit: Credit
-        
-        var body: some View {
-            ZStack(alignment: .bottom) {
-                NavigationLink(destination: PersonView(credit: self.credit), tag: 0, selection: self.$selection) {
-                    EmptyView()
-                }
-                                              
-                ZStack {
-                    KFImage(source: TMDBAPI.imageResource(for: credit.creditProfilePath))
-                        .resizable()
-                        .onSuccess { (r) in
-                            self.done = true
-                    }
+
+struct RowView: View {
+    
+    let genericType: GenericCodable
+    
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            
+            ZStack {
+                KFImage(source: TMDBAPI.imageResource(for: self.genericType.typeProfileImageUrl))
+                    .resizable()
                     .cancelOnDisappear(true)
-                    .opacity(self.done || ImageCache.default.isCached(forKey: credit.creditProfilePath ?? "") ? 1.0 : 0.0)
-                    .animation(.linear(duration: 0.4))
-                    
-                    LinearGradient(gradient: Gradient(colors: [.clear, .black]),
-                                   startPoint: .center,
-                                   endPoint: .bottom)
-                }.cornerRadius(10)
+                    .clipped()
+                    .border(Color(.systemBackground))
                 
-                VStack {
-                    Text(credit.creditName)
-                        .bold()
-                        .font(.system(size: 13))
-                        .lineLimit(1)
-                    if !credit.extraInfo.isEmpty {
-                        Text(credit.extraInfo)
-                            .font(.system(size: 12))
-                            .lineLimit(2)
-                    }
+                LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center,  endPoint: .bottom)
+                
+            }
+            
+            VStack {
+                Text(self.genericType.typeTitle)
+                    .bold()
+                    .font(.system(size: 13))
+                    
+                    .lineLimit(self.genericType.type == .movie ? 2 : 1)
+                                    
+                if !self.genericType.typeExtraInfo.isEmpty {
+                    Text(self.genericType.typeExtraInfo)
+                        .font(.system(size: 12))
+                        .lineLimit(self.genericType.type == .movie ? 1 : 2)
                 }
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .padding(5)
             }
-            .onTapGesture {
-                self.selection = 0
-            }
+            .foregroundColor(.white)
+            .multilineTextAlignment(.center)
+            .padding(5)
         }
-	}
+        .cornerRadius(10)
+    }
 }
-
-
-/*.onTapGesture {
-    self.fetcher.personMovies.0.removeAll()
-    self.fetcher.personMovies.1.removeAll()
-    self.fetcher.fetchPersonDetails(self.credit)
-    self.fetcher.fetchPersonMovies(self.credit)
-    self.selection = 0
-}*/

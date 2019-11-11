@@ -7,8 +7,8 @@
 //
 
 import SwiftUI
-import Kingfisher
-import KingfisherSwiftUI
+//import Kingfisher
+//import KingfisherSwiftUI
 
 struct MovieCollectionView: View {
    
@@ -31,10 +31,10 @@ struct MovieCollectionView: View {
                     ZStack(alignment: .bottomLeading) {
                     
                         ZStack(alignment: .bottom) {
-                            KFImage(TMDBAPI.getMoviePosterUrl(self.movieCollectionDetails.posterPath, withSize: "original"))
+                         /*   KFImage(TMDBAPI.getMoviePosterUrl(self.movieCollectionDetails.posterPath, withSize: "original"))
                                 .resizable()
                                 .cancelOnDisappear(true)
-                                .aspectRatio(3/4, contentMode: .fit)
+                                .aspectRatio(3/4, contentMode: .fit)*/
                             
                             LinearGradient(gradient: Gradient(colors: [.clear, .black]), startPoint: .center, endPoint: .bottom)
                         }
@@ -97,11 +97,12 @@ struct MovieCollectionView: View {
                     EmptyView()
                 }
                 VStack(spacing: 5) {
-                    KFImage(TMDBAPI.getMoviePosterUrl(self.movie.posterPath))
+                    EmptyView()
+                   /* KFImage(TMDBAPI.getMoviePosterUrl(self.movie.posterPath))
                         .resizable()
                         .cancelOnDisappear(true)
                         .frame(width: proxy.size.width / 4)
-                        .cornerRadius(8)
+                        .cornerRadius(8)*/
                     
                     /*Text("\(self.movie.releaseDate.toDate.getComponents([.year]))")
                         .bold()*/
